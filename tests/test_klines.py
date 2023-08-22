@@ -13,8 +13,8 @@ def dynamic_klines_test_params():
     Generate params for klines tests
     :return:
     """
-    # Tests Futures
-    for asset in BinanceBulkDownloader._FUTURES_ASSET:
+    assets = list(BinanceBulkDownloader._FUTURES_ASSET + BinanceBulkDownloader._ASSET)
+    for asset in assets:
         for data_type in BinanceBulkDownloader._DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE:
             for data_frequency in BinanceBulkDownloader._DATA_FREQUENCY:
                 for timeperiod_per_file in ["daily", "monthly"]:
