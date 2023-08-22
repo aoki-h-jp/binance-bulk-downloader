@@ -168,7 +168,6 @@ class BinanceBulkDownloader:
 
         try:
             with zipfile.ZipFile(zip_destination_path) as existing_zip:
-                print(csv_destination_path.split("/"))
                 existing_zip.extractall(
                     csv_destination_path.replace(csv_destination_path, self._build_destination_path(symbol, historical_date, extension="", exclude_filename=True))
                 )
