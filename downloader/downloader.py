@@ -1,8 +1,8 @@
 # import standard libraries
 import datetime
+import json
 import os
 import zipfile
-import json
 from concurrent.futures import ThreadPoolExecutor
 from zipfile import BadZipfile
 
@@ -23,29 +23,106 @@ class BinanceBulkDownloader:
     _ASSET = ("spot",)
     _DATA_TYPE_BY_ASSET = {
         "um": {
-            "daily": ("aggTrades", "bookDepth", "bookTicker", "indexPriceKlines", "klines", "liquidationSnapshot", "markPriceKlines", "metrics", "premiumIndexKlines", "trades"),
-            "monthly": ("aggTrades", "bookTicker", "fundingRate", "indexPriceKlines", "klines", "markPriceKlines", "premiumIndexKlines", "trades")
+            "daily": (
+                "aggTrades",
+                "bookDepth",
+                "bookTicker",
+                "indexPriceKlines",
+                "klines",
+                "liquidationSnapshot",
+                "markPriceKlines",
+                "metrics",
+                "premiumIndexKlines",
+                "trades",
+            ),
+            "monthly": (
+                "aggTrades",
+                "bookTicker",
+                "fundingRate",
+                "indexPriceKlines",
+                "klines",
+                "markPriceKlines",
+                "premiumIndexKlines",
+                "trades",
+            ),
         },
         "cm": {
-            "daily": ("aggTrades", "bookDepth", "bookTicker", "indexPriceKlines", "klines", "liquidationSnapshot", "markPriceKlines", "metrics", "premiumIndexKlines", "trades"),
-            "monthly": ("aggTrades", "bookTicker", "fundingRate", "indexPriceKlines", "klines", "markPriceKlines", "premiumIndexKlines", "trades")
+            "daily": (
+                "aggTrades",
+                "bookDepth",
+                "bookTicker",
+                "indexPriceKlines",
+                "klines",
+                "liquidationSnapshot",
+                "markPriceKlines",
+                "metrics",
+                "premiumIndexKlines",
+                "trades",
+            ),
+            "monthly": (
+                "aggTrades",
+                "bookTicker",
+                "fundingRate",
+                "indexPriceKlines",
+                "klines",
+                "markPriceKlines",
+                "premiumIndexKlines",
+                "trades",
+            ),
         },
         "spot": {
             "daily": ("aggTrades", "klines", "trades"),
-            "monthly": ("aggTrades", "klines", "trades")
+            "monthly": ("aggTrades", "klines", "trades"),
         },
-        "option": {
-            "daily": ("BVOLIndex", "EOHSummary")
-        },
+        "option": {"daily": ("BVOLIndex", "EOHSummary")},
     }
-    _DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE = ("klines", "markPriceKlines", "indexPriceKlines", "premiumIndexKlines")
-    _DATA_FREQUENCY = ('1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1mo')
+    _DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE = (
+        "klines",
+        "markPriceKlines",
+        "indexPriceKlines",
+        "premiumIndexKlines",
+    )
+    _DATA_FREQUENCY = (
+        "1m",
+        "3m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "4h",
+        "6h",
+        "8h",
+        "12h",
+        "1d",
+        "3d",
+        "1w",
+        "1mo",
+    )
     _INITIAL_DATE = datetime.datetime(2020, 1, 1)
     TODAY = datetime.datetime.utcnow().today().strftime("%Y-%m-%d")
-    ALL_DATE = pd.date_range(_INITIAL_DATE, TODAY, freq="1d").to_series().dt.strftime("%Y-%m-%d").tolist()
-    ALL_MONTH = pd.date_range(_INITIAL_DATE, TODAY, freq="1M").to_series().dt.strftime("%Y-%m-%d").tolist()
+    ALL_DATE = (
+        pd.date_range(_INITIAL_DATE, TODAY, freq="1d")
+        .to_series()
+        .dt.strftime("%Y-%m-%d")
+        .tolist()
+    )
+    ALL_MONTH = (
+        pd.date_range(_INITIAL_DATE, TODAY, freq="1M")
+        .to_series()
+        .dt.strftime("%Y-%m-%d")
+        .tolist()
+    )
 
-    def __init__(self, destination_dir=".", data_type="klines", data_frequency="1m", asset="um", currency="USDT", timeperiod_per_file="daily") -> None:
+    def __init__(
+        self,
+        destination_dir=".",
+        data_type="klines",
+        data_frequency="1m",
+        asset="um",
+        currency="USDT",
+        timeperiod_per_file="daily",
+    ) -> None:
         """
         :param destination_dir: Destination directory for downloaded files
         :param data_type: Type of data to download (klines, aggTrades, etc.)
@@ -71,9 +148,17 @@ class BinanceBulkDownloader:
         else:
             asset = "MARGIN"
 
-        url = '/'.join([self._BINANCE_API_BASE_URL, f"api/v3/exchangeInfo?permissions={asset}"])
+        url = "/".join(
+            [self._BINANCE_API_BASE_URL, f"api/v3/exchangeInfo?permissions={asset}"]
+        )
         response = requests.get(url).text
-        return [s for s in map(lambda symbol: symbol['symbol'], json.loads(response)['symbols']) if s.endswith(self._currency)]
+        return [
+            s
+            for s in map(
+                lambda symbol: symbol["symbol"], json.loads(response)["symbols"]
+            )
+            if s.endswith(self._currency)
+        ]
 
     def _make_asset_type(self) -> str:
         """
@@ -107,15 +192,32 @@ class BinanceBulkDownloader:
         """
         if self._data_type in self._DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE:
             filename = f"{symbol}-{self._data_frequency}-{historical_date}.zip"
-            url_parts = [self._make_asset_type(), self._asset, self._timeperiod_per_file, self._data_type, symbol, self._data_frequency, filename]
+            url_parts = [
+                self._make_asset_type(),
+                self._asset,
+                self._timeperiod_per_file,
+                self._data_type,
+                symbol,
+                self._data_frequency,
+                filename,
+            ]
         else:
             filename = f"{symbol}-{self._data_type}-{historical_date}.zip"
-            url_parts = [self._make_asset_type(), self._asset, self._timeperiod_per_file, self._data_type, symbol, filename]
+            url_parts = [
+                self._make_asset_type(),
+                self._asset,
+                self._timeperiod_per_file,
+                self._data_type,
+                symbol,
+                filename,
+            ]
         url_parts.insert(0, self._BINANCE_DATA_BASE_URL)
         url = "/".join(url_parts)
         return url
 
-    def _build_destination_path(self, symbol, historical_date, extension=".zip", exclude_filename=False) -> str:
+    def _build_destination_path(
+        self, symbol, historical_date, extension=".zip", exclude_filename=False
+    ) -> str:
         """
         Build destination path to save
         :param symbol: symbol (BTCUSDT, etc.)
@@ -126,10 +228,27 @@ class BinanceBulkDownloader:
         """
         if self._data_type in self._DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE:
             filename = f"{symbol}-{self._data_frequency}-{historical_date}{extension}"
-            destination_path_parts = [self._destination_dir, self._make_asset_type(), self._asset, self._timeperiod_per_file, self._data_type, symbol, self._data_frequency, filename]
+            destination_path_parts = [
+                self._destination_dir,
+                self._make_asset_type(),
+                self._asset,
+                self._timeperiod_per_file,
+                self._data_type,
+                symbol,
+                self._data_frequency,
+                filename,
+            ]
         else:
             filename = f"{symbol}-{self._data_type}-{historical_date}{extension}"
-            destination_path_parts = [self._destination_dir, self._make_asset_type(), self._asset, self._timeperiod_per_file, self._data_type, symbol, filename]
+            destination_path_parts = [
+                self._destination_dir,
+                self._make_asset_type(),
+                self._asset,
+                self._timeperiod_per_file,
+                self._data_type,
+                symbol,
+                filename,
+            ]
         if exclude_filename:
             destination_path_parts = destination_path_parts[:-1]
         destination_path = os.path.join(*destination_path_parts)
@@ -145,7 +264,9 @@ class BinanceBulkDownloader:
         url = self._build_url(symbol, historical_date)
         print(f"[bold blue]Downloading {url}[/bold blue]: " + url)
         zip_destination_path = self._build_destination_path(symbol, historical_date)
-        csv_destination_path = self._build_destination_path(symbol, historical_date, extension=".csv")
+        csv_destination_path = self._build_destination_path(
+            symbol, historical_date, extension=".csv"
+        )
         # ディレクトリが存在しない場合は作る
         if not os.path.exists(os.path.dirname(zip_destination_path)):
             os.makedirs(os.path.dirname(zip_destination_path))
@@ -169,7 +290,12 @@ class BinanceBulkDownloader:
         try:
             with zipfile.ZipFile(zip_destination_path) as existing_zip:
                 existing_zip.extractall(
-                    csv_destination_path.replace(csv_destination_path, self._build_destination_path(symbol, historical_date, extension="", exclude_filename=True))
+                    csv_destination_path.replace(
+                        csv_destination_path,
+                        self._build_destination_path(
+                            symbol, historical_date, extension="", exclude_filename=True
+                        ),
+                    )
                 )
                 print(f"[green]Unzipped: {zip_destination_path}[/green]")
         except BadZipfile:
@@ -196,7 +322,8 @@ class BinanceBulkDownloader:
             raise ValueError("timeperiod_per_file must be daily or monthly.")
 
         for date_chunk in track(
-                self.make_chunks(historical_dates, self._CHUNK_SIZE), description="Downloading"
+            self.make_chunks(historical_dates, self._CHUNK_SIZE),
+            description="Downloading",
         ):
             with ThreadPoolExecutor() as executor:
                 executor.map(self._download, [symbol] * len(date_chunk), date_chunk)
@@ -209,7 +336,7 @@ class BinanceBulkDownloader:
         :param n: size of chunk
         :return: list of chunks
         """
-        return [lst[i: i + n] for i in range(0, len(lst), n)]
+        return [lst[i : i + n] for i in range(0, len(lst), n)]
 
     def run_download(self) -> None:
         """
@@ -222,4 +349,6 @@ class BinanceBulkDownloader:
             self._download_concurrently(sym)
             print(f"[green]Downloaded: {sym}[/green]")
 
-        print(f"[bold blue]Finish download {self._data_type} {self._data_frequency}[/bold blue]")
+        print(
+            f"[bold blue]Finish download {self._data_type} {self._data_frequency}[/bold blue]"
+        )
