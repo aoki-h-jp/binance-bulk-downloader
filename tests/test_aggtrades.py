@@ -67,4 +67,3 @@ def test_aggtrades(tmpdir, asset, data_type, timeperiod_per_file):
                 exclude_filename=False,
             )
         )
-
