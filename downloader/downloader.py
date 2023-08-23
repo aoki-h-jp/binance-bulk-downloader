@@ -13,12 +13,17 @@ from rich import print
 from rich.progress import track
 from tqdm import tqdm
 
+# import my libraries
+from .exceptions import BinanceBulkDownloaderParamsError
+
 
 class BinanceBulkDownloader:
     _CHUNK_SIZE = 10
     _BINANCE_API_BASE_URL = "https://data-api.binance.vision"
     _BINANCE_DATA_BASE_URL = "https://data.binance.vision/data"
-    _FUTURES_ASSET = ("um", "cm")
+    # TODO: To be corrected in the future due to errors because of symbol discrepancies.
+    # _FUTURES_ASSET = ("um", "cm")
+    _FUTURES_ASSET = ("um",)
     _OPTIONS_ASSET = ("option",)
     _ASSET = ("spot",)
     _DATA_TYPE_BY_ASSET = {
@@ -46,30 +51,31 @@ class BinanceBulkDownloader:
                 "trades",
             ),
         },
-        "cm": {
-            "daily": (
-                "aggTrades",
-                "bookDepth",
-                "bookTicker",
-                "indexPriceKlines",
-                "klines",
-                "liquidationSnapshot",
-                "markPriceKlines",
-                "metrics",
-                "premiumIndexKlines",
-                "trades",
-            ),
-            "monthly": (
-                "aggTrades",
-                "bookTicker",
-                "fundingRate",
-                "indexPriceKlines",
-                "klines",
-                "markPriceKlines",
-                "premiumIndexKlines",
-                "trades",
-            ),
-        },
+        # TODO: To be corrected in the future due to errors because of symbol discrepancies.
+        # "cm": {
+        #     "daily": (
+        #         "aggTrades",
+        #         "bookDepth",
+        #         "bookTicker",
+        #         "indexPriceKlines",
+        #         "klines",
+        #         "liquidationSnapshot",
+        #         "markPriceKlines",
+        #         "metrics",
+        #         "premiumIndexKlines",
+        #         "trades",
+        #     ),
+        #     "monthly": (
+        #         "aggTrades",
+        #         "bookTicker",
+        #         "fundingRate",
+        #         "indexPriceKlines",
+        #         "klines",
+        #         "markPriceKlines",
+        #         "premiumIndexKlines",
+        #         "trades",
+        #     ),
+        # },
         "spot": {
             "daily": ("aggTrades", "klines", "trades"),
             "monthly": ("aggTrades", "klines", "trades"),
@@ -95,9 +101,10 @@ class BinanceBulkDownloader:
         "8h",
         "12h",
         "1d",
-        "3d",
-        "1w",
-        "1mo",
+        # TODO: To be corrected in the future due to errors because of date discrepancies.
+        # "3d",
+        # "1w",
+        # "1mo",
     )
     _INITIAL_DATE = datetime.datetime(2020, 1, 1)
     TODAY = datetime.datetime.utcnow().today().strftime("%Y-%m-%d")
@@ -138,6 +145,41 @@ class BinanceBulkDownloader:
         self._currency = currency
         self._timeperiod_per_file = timeperiod_per_file
 
+    def _check_params(self) -> None:
+        """
+        Check params
+        :return: None
+        """
+        if (
+            self._data_type
+            not in self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]
+        ):
+            raise BinanceBulkDownloaderParamsError(
+                f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
+            )
+
+        if self._data_frequency not in self._DATA_FREQUENCY:
+            raise BinanceBulkDownloaderParamsError(
+                f"data_frequency must be {self._DATA_FREQUENCY}."
+            )
+
+        if self._asset not in self._ASSET + self._FUTURES_ASSET + self._OPTIONS_ASSET:
+            raise BinanceBulkDownloaderParamsError(
+                f"asset must be {self._ASSET + self._FUTURES_ASSET + self._OPTIONS_ASSET}."
+            )
+
+        if self._timeperiod_per_file not in ["daily", "monthly"]:
+            raise BinanceBulkDownloaderParamsError(
+                f"timeperiod_per_file must be daily or monthly."
+            )
+
+        if not self._data_type in self._DATA_TYPE_BY_ASSET.get(self._asset, None).get(
+            self._timeperiod_per_file, None
+        ):
+            raise BinanceBulkDownloaderParamsError(
+                f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
+            )
+
     def _get_list_of_symbols(self) -> list:
         """
         Get list of symbols from Binance API (ExchangeInfo)
@@ -165,14 +207,18 @@ class BinanceBulkDownloader:
         Convert asset to asset type
         :return:
         """
-        if self._asset in self._FUTURES_ASSET:
-            asset_type = "futures"
+        if self._asset in "um":
+            asset_type = "futures/um"
+        elif self._asset in "cm":
+            asset_type = "futures/cm"
         elif self._asset in self._OPTIONS_ASSET:
             asset_type = "options"
         elif self._asset in self._ASSET:
             asset_type = "spot"
         else:
-            raise ValueError("asset must be futures, options or spot.")
+            raise BinanceBulkDownloaderParamsError(
+                "asset must be futures, options or spot."
+            )
         return asset_type
 
     def _set_timeperiod_per_file(self, timeperiod_per_file) -> None:
@@ -194,7 +240,6 @@ class BinanceBulkDownloader:
             filename = f"{symbol}-{self._data_frequency}-{historical_date}.zip"
             url_parts = [
                 self._make_asset_type(),
-                self._asset,
                 self._timeperiod_per_file,
                 self._data_type,
                 symbol,
@@ -205,7 +250,6 @@ class BinanceBulkDownloader:
             filename = f"{symbol}-{self._data_type}-{historical_date}.zip"
             url_parts = [
                 self._make_asset_type(),
-                self._asset,
                 self._timeperiod_per_file,
                 self._data_type,
                 symbol,
@@ -261,6 +305,7 @@ class BinanceBulkDownloader:
         :param historical_date: historical date (2020-01-01, etc.)
         :return: None
         """
+        self._check_params()
         url = self._build_url(symbol, historical_date)
         print(f"[bold blue]Downloading {url}[/bold blue]: " + url)
         zip_destination_path = self._build_destination_path(symbol, historical_date)
@@ -289,7 +334,6 @@ class BinanceBulkDownloader:
 
         try:
             with zipfile.ZipFile(zip_destination_path) as existing_zip:
-                print(csv_destination_path.split("/"))
                 existing_zip.extractall(
                     csv_destination_path.replace(
                         csv_destination_path,
@@ -320,7 +364,9 @@ class BinanceBulkDownloader:
         elif self._timeperiod_per_file == "monthly":
             historical_dates = self.ALL_MONTH
         else:
-            raise ValueError("timeperiod_per_file must be daily or monthly.")
+            raise BinanceBulkDownloaderParamsError(
+                "timeperiod_per_file must be daily or monthly."
+            )
 
         for date_chunk in track(
             self.make_chunks(historical_dates, self._CHUNK_SIZE),
