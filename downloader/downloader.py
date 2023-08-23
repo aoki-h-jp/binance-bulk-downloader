@@ -18,7 +18,9 @@ class BinanceBulkDownloader:
     _CHUNK_SIZE = 10
     _BINANCE_API_BASE_URL = "https://data-api.binance.vision"
     _BINANCE_DATA_BASE_URL = "https://data.binance.vision/data"
-    _FUTURES_ASSET = ("um", "cm")
+    # TODO: To be corrected in the future due to errors because of symbol discrepancies.
+    # _FUTURES_ASSET = ("um", "cm")
+    _FUTURES_ASSET = ("um",)
     _OPTIONS_ASSET = ("option",)
     _ASSET = ("spot",)
     _DATA_TYPE_BY_ASSET = {
@@ -46,30 +48,31 @@ class BinanceBulkDownloader:
                 "trades",
             ),
         },
-        "cm": {
-            "daily": (
-                "aggTrades",
-                "bookDepth",
-                "bookTicker",
-                "indexPriceKlines",
-                "klines",
-                "liquidationSnapshot",
-                "markPriceKlines",
-                "metrics",
-                "premiumIndexKlines",
-                "trades",
-            ),
-            "monthly": (
-                "aggTrades",
-                "bookTicker",
-                "fundingRate",
-                "indexPriceKlines",
-                "klines",
-                "markPriceKlines",
-                "premiumIndexKlines",
-                "trades",
-            ),
-        },
+        # TODO: To be corrected in the future due to errors because of symbol discrepancies.
+        # "cm": {
+        #     "daily": (
+        #         "aggTrades",
+        #         "bookDepth",
+        #         "bookTicker",
+        #         "indexPriceKlines",
+        #         "klines",
+        #         "liquidationSnapshot",
+        #         "markPriceKlines",
+        #         "metrics",
+        #         "premiumIndexKlines",
+        #         "trades",
+        #     ),
+        #     "monthly": (
+        #         "aggTrades",
+        #         "bookTicker",
+        #         "fundingRate",
+        #         "indexPriceKlines",
+        #         "klines",
+        #         "markPriceKlines",
+        #         "premiumIndexKlines",
+        #         "trades",
+        #     ),
+        # },
         "spot": {
             "daily": ("aggTrades", "klines", "trades"),
             "monthly": ("aggTrades", "klines", "trades"),
@@ -95,9 +98,10 @@ class BinanceBulkDownloader:
         "8h",
         "12h",
         "1d",
-        "3d",
-        "1w",
-        "1mo",
+        # TODO: To be corrected in the future due to errors because of date discrepancies.
+        # "3d",
+        # "1w",
+        # "1mo",
     )
     _INITIAL_DATE = datetime.datetime(2020, 1, 1)
     TODAY = datetime.datetime.utcnow().today().strftime("%Y-%m-%d")
@@ -165,8 +169,10 @@ class BinanceBulkDownloader:
         Convert asset to asset type
         :return:
         """
-        if self._asset in self._FUTURES_ASSET:
-            asset_type = "futures"
+        if self._asset in "um":
+            asset_type = "futures/um"
+        elif self._asset in "cm":
+            asset_type = "futures/cm"
         elif self._asset in self._OPTIONS_ASSET:
             asset_type = "options"
         elif self._asset in self._ASSET:
@@ -194,7 +200,6 @@ class BinanceBulkDownloader:
             filename = f"{symbol}-{self._data_frequency}-{historical_date}.zip"
             url_parts = [
                 self._make_asset_type(),
-                self._asset,
                 self._timeperiod_per_file,
                 self._data_type,
                 symbol,
@@ -205,7 +210,6 @@ class BinanceBulkDownloader:
             filename = f"{symbol}-{self._data_type}-{historical_date}.zip"
             url_parts = [
                 self._make_asset_type(),
-                self._asset,
                 self._timeperiod_per_file,
                 self._data_type,
                 symbol,
