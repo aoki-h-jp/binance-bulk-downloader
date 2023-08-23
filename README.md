@@ -46,16 +46,16 @@ This library is under development. Not all unit tests have been completed yet an
 | data_type           | spot | um   | cm   | options | 
 | :------------------ | :--: | :--: | :--: | :-----: | 
 | aggTrades           | ✅   | ✅   | 🚧 | ❎      | 
-| bookDepth           | ❎   | 🚧 | 🚧 | ❎      | 
-| bookTicker          | ❎   | 🚧 | 🚧 | ❎      | 
-| fundingRate         | ❎   | 🚧 | 🚧 | ❎      | 
+| bookDepth           | ❎   | ✅   | 🚧 | ❎      | 
+| bookTicker          | ❎   | ✅   | 🚧 | ❎      | 
+| fundingRate         | ❎   | ✅   | 🚧 | ❎      | 
 | indexPriceKlines    | ❎   | ✅   | 🚧 | ❎      | 
 | klines              | ✅   | ✅   | 🚧 | ❎      | 
-| liquidationSnapshot | ❎   | 🚧 | 🚧 | ❎      | 
+| liquidationSnapshot | ❎   | ✅   | 🚧 | ❎      | 
 | markPriceKlines     | ❎   | ✅   | 🚧 | ❎      | 
-| metrics             | ❎   | 🚧 | 🚧 | ❎      | 
+| metrics             | ❎   | ✅   | 🚧 | ❎      | 
 | premiumIndexKlines  | ❎   | ✅   | 🚧 | ❎      | 
-| trades              | 🚧 | 🚧 | 🚧 | ❎      | 
+| trades              | ✅   | ✅   | 🚧 | ❎      | 
 | BVOLIndex           | ❎   | ❎   | ❎   | 🚧    | 
 | EOHSummary          | ❎   | ❎   | ❎   | 🚧    | 
 
