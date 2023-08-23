@@ -1,5 +1,6 @@
 # binance-bulk-downloader
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110//)
+[![Format code](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml/badge.svg?branch=main)](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml)
 
 ## Python library for bulk downloading Binance historical data
 A Python library to efficiently and concurrently download historical data files from Binance.
@@ -39,45 +40,45 @@ downloader.run_download()
 ## Status
 This library is under development. Not all unit tests have been completed yet and the behaviour is unstable.
 
-✅: Implemented and tested. 🚧: Implemented but not tested. ❎: Not available on Binance.
+✅: Implemented and tested. 🚧: Implemented but not tested. ❌: Not implemented ❎: Not available on Binance.
 
 ### by data_type
 
 | data_type           | spot | um   | cm   | options | 
 | :------------------ | :--: | :--: | :--: | :-----: | 
-| aggTrades           | ✅   | ✅   | 🚧 | ❎      | 
-| bookDepth           | ❎   | ✅   | 🚧 | ❎      | 
-| bookTicker          | ❎   | ✅   | 🚧 | ❎      | 
-| fundingRate         | ❎   | ✅   | 🚧 | ❎      | 
-| indexPriceKlines    | ❎   | ✅   | 🚧 | ❎      | 
-| klines              | ✅   | ✅   | 🚧 | ❎      | 
-| liquidationSnapshot | ❎   | ✅   | 🚧 | ❎      | 
-| markPriceKlines     | ❎   | ✅   | 🚧 | ❎      | 
-| metrics             | ❎   | ✅   | 🚧 | ❎      | 
-| premiumIndexKlines  | ❎   | ✅   | 🚧 | ❎      | 
-| trades              | ✅   | ✅   | 🚧 | ❎      | 
-| BVOLIndex           | ❎   | ❎   | ❎   | 🚧    | 
-| EOHSummary          | ❎   | ❎   | ❎   | 🚧    | 
+| aggTrades           | ✅   | ✅   | ❌ | ❎      | 
+| bookDepth           | ❎   | ✅   | ❌ | ❎      | 
+| bookTicker          | ❎   | ✅   | ❌ | ❎      | 
+| fundingRate         | ❎   | ✅   | ❌ | ❎      | 
+| indexPriceKlines    | ❎   | ✅   | ❌ | ❎      | 
+| klines              | ✅   | ✅   | ❌ | ❎      | 
+| liquidationSnapshot | ❎   | ✅   | ❌ | ❎      | 
+| markPriceKlines     | ❎   | ✅   | ❌ | ❎      | 
+| metrics             | ❎   | ✅   | ❌ | ❎      | 
+| premiumIndexKlines  | ❎   | ✅   | ❌ | ❎      | 
+| trades              | ✅   | ✅   | ❌ | ❎      | 
+| BVOLIndex           | ❎   | ❎   | ❎   | ❌    | 
+| EOHSummary          | ❎   | ❎   | ❎   | ❌    | 
 
 ### by data_frequency (klines, indexPriceKlines, markPriceKlines, premiumIndexKlines)
 
 | data_frequency | spot | um   | cm   | options |
 | :------------- | :--: | :--: | :--: | :-----: |
-| 1m             | ✅   | ✅   | 🚧 | ❎      |
-| 3m             | ✅   | ✅   | 🚧 | ❎      |
-| 5m             | ✅   | ✅   | 🚧 | ❎      |
-| 15m            | ✅   | ✅   | 🚧 | ❎      |
-| 30m            | ✅   | ✅   | 🚧 | ❎      |
-| 1h             | ✅   | ✅   | 🚧 | ❎      |
-| 2h             | ✅   | ✅   | 🚧 | ❎      |
-| 4h             | ✅   | ✅   | 🚧 | ❎      |
-| 6h             | ✅   | ✅   | 🚧 | ❎      |
-| 8h             | ✅   | ✅   | 🚧 | ❎      |
-| 12h            | ✅   | ✅   | 🚧 | ❎      |
-| 1d             | ✅   | ✅   | 🚧 | ❎      |
-| 3d             | 🚧   | 🚧   | 🚧 | ❎      |
-| 1w             | 🚧   | 🚧   | 🚧 | ❎      |
-| 1mo             | 🚧   | 🚧   | 🚧 | ❎      |
+| 1m             | ✅   | ✅   | ❌ | ❎      |
+| 3m             | ✅   | ✅   | ❌ | ❎      |
+| 5m             | ✅   | ✅   | ❌ | ❎      |
+| 15m            | ✅   | ✅   | ❌ | ❎      |
+| 30m            | ✅   | ✅   | ❌ | ❎      |
+| 1h             | ✅   | ✅   | ❌ | ❎      |
+| 2h             | ✅   | ✅   | ❌ | ❎      |
+| 4h             | ✅   | ✅   | ❌ | ❎      |
+| 6h             | ✅   | ✅   | ❌ | ❎      |
+| 8h             | ✅   | ✅   | ❌ | ❎      |
+| 12h            | ✅   | ✅   | ❌ | ❎      |
+| 1d             | ✅   | ✅   | ❌ | ❎      |
+| 3d             | ❌   | ❌   | ❌ | ❎      |
+| 1w             | ❌   | ❌   | ❌ | ❎      |
+| 1mo            | ❌   | ❌   | ❌ | ❎      |
 
 
 ## Disclaimer
