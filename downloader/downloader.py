@@ -13,6 +13,9 @@ from rich import print
 from rich.progress import track
 from tqdm import tqdm
 
+# import my libraries
+from .exceptions import BinanceBulkDownloaderParamsError
+
 
 class BinanceBulkDownloader:
     _CHUNK_SIZE = 10
@@ -119,13 +122,13 @@ class BinanceBulkDownloader:
     )
 
     def __init__(
-        self,
-        destination_dir=".",
-        data_type="klines",
-        data_frequency="1m",
-        asset="um",
-        currency="USDT",
-        timeperiod_per_file="daily",
+            self,
+            destination_dir=".",
+            data_type="klines",
+            data_frequency="1m",
+            asset="um",
+            currency="USDT",
+            timeperiod_per_file="daily",
     ) -> None:
         """
         :param destination_dir: Destination directory for downloaded files
@@ -141,6 +144,38 @@ class BinanceBulkDownloader:
         self._asset = asset
         self._currency = currency
         self._timeperiod_per_file = timeperiod_per_file
+
+    def _check_params(self) -> None:
+        """
+        Check params
+        :return: None
+        """
+        if self._data_type not in self._DATA_TYPE_BY_ASSET[self._asset][
+            self._timeperiod_per_file
+        ]:
+            raise BinanceBulkDownloaderParamsError(
+                f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
+            )
+
+        if self._data_frequency not in self._DATA_FREQUENCY:
+            raise BinanceBulkDownloaderParamsError(
+                f"data_frequency must be {self._DATA_FREQUENCY}."
+            )
+
+        if self._asset not in self._ASSET + self._FUTURES_ASSET + self._OPTIONS_ASSET:
+            raise BinanceBulkDownloaderParamsError(
+                f"asset must be {self._ASSET + self._FUTURES_ASSET + self._OPTIONS_ASSET}."
+            )
+
+        if self._timeperiod_per_file not in ["daily", "monthly"]:
+            raise BinanceBulkDownloaderParamsError(
+                f"timeperiod_per_file must be daily or monthly."
+            )
+
+        if not self._data_type in self._DATA_TYPE_BY_ASSET.get(self._asset, None).get(self._timeperiod_per_file, None):
+            raise BinanceBulkDownloaderParamsError(
+                f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
+            )
 
     def _get_list_of_symbols(self) -> list:
         """
@@ -178,7 +213,7 @@ class BinanceBulkDownloader:
         elif self._asset in self._ASSET:
             asset_type = "spot"
         else:
-            raise ValueError("asset must be futures, options or spot.")
+            raise BinanceBulkDownloaderParamsError("asset must be futures, options or spot.")
         return asset_type
 
     def _set_timeperiod_per_file(self, timeperiod_per_file) -> None:
@@ -220,7 +255,7 @@ class BinanceBulkDownloader:
         return url
 
     def _build_destination_path(
-        self, symbol, historical_date, extension=".zip", exclude_filename=False
+            self, symbol, historical_date, extension=".zip", exclude_filename=False
     ) -> str:
         """
         Build destination path to save
@@ -265,6 +300,7 @@ class BinanceBulkDownloader:
         :param historical_date: historical date (2020-01-01, etc.)
         :return: None
         """
+        self._check_params()
         url = self._build_url(symbol, historical_date)
         print(f"[bold blue]Downloading {url}[/bold blue]: " + url)
         zip_destination_path = self._build_destination_path(symbol, historical_date)
@@ -323,11 +359,11 @@ class BinanceBulkDownloader:
         elif self._timeperiod_per_file == "monthly":
             historical_dates = self.ALL_MONTH
         else:
-            raise ValueError("timeperiod_per_file must be daily or monthly.")
+            raise BinanceBulkDownloaderParamsError("timeperiod_per_file must be daily or monthly.")
 
         for date_chunk in track(
-            self.make_chunks(historical_dates, self._CHUNK_SIZE),
-            description="Downloading",
+                self.make_chunks(historical_dates, self._CHUNK_SIZE),
+                description="Downloading",
         ):
             with ThreadPoolExecutor() as executor:
                 executor.map(self._download, [symbol] * len(date_chunk), date_chunk)
@@ -340,7 +376,7 @@ class BinanceBulkDownloader:
         :param n: size of chunk
         :return: list of chunks
         """
-        return [lst[i : i + n] for i in range(0, len(lst), n)]
+        return [lst[i: i + n] for i in range(0, len(lst), n)]
 
     def run_download(self) -> None:
         """

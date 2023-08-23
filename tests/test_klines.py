@@ -6,6 +6,7 @@ import pytest
 
 # import my libraries
 from downloader.downloader import *
+from downloader.exceptions import BinanceBulkDownloaderParamsError
 
 
 def dynamic_klines_test_params():
@@ -35,8 +36,8 @@ def test_klines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
     """
     Test klines
     :param tmpdir:
-    :param asset: asset (BTCUSDT, etc.)
-    :param data_type: data type (aggTrades, klines, etc.)
+    :param asset: asset (spot, um, cm)
+    :param data_type: data type (klines, premiumIndexKlines, etc.)
     :param data_frequency: data frequency (1m, 1h, etc.)
     :param timeperiod_per_file: time period per file (daily, monthly)
     :return:
@@ -47,14 +48,19 @@ def test_klines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
         data_frequency=data_frequency,
         asset=asset,
     )
-    downloader._download(symbol="BTCUSDT", historical_date="2022-01-01")
-
+    # If raise BinanceBulkDownloaderParamsError, test is passed.
+    # If asset is spot and data_type is indexPriceKlines, markPriceKlines or premiumIndexKlines, raise BinanceBulkDownloaderParamsError.
+    if asset == "spot" and (data_type == "indexPriceKlines" or data_type == "markPriceKlines" or data_type == "premiumIndexKlines"):
+        with pytest.raises(BinanceBulkDownloaderParamsError):
+            downloader._download(symbol="BTCUSDT", historical_date="2022-01-01")
     # If exists csv file on destination dir, test is passed.
-    assert not os.path.exists(
-        downloader._build_destination_path(
-            symbol="BTCUSDT",
-            historical_date="2020-01-01",
-            extension=".csv",
-            exclude_filename=False,
+    else:
+        downloader._download(symbol="BTCUSDT", historical_date="2022-01-01")
+        assert os.path.exists(
+            downloader._build_destination_path(
+                symbol="BTCUSDT",
+                historical_date="2022-01-01",
+                extension=".csv",
+                exclude_filename=False,
+            )
         )
-    )

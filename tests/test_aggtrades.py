@@ -46,12 +46,6 @@ def test_aggtrades(tmpdir, asset, data_type, timeperiod_per_file):
     )
     if timeperiod_per_file == "daily":
         downloader._download(symbol="BTCUSDT", historical_date="2022-01-01")
-        print(downloader._build_destination_path(
-                symbol="BTCUSDT",
-                historical_date="2022-01-01",
-                extension=".csv",
-                exclude_filename=False,
-            ))
         # If exists csv file on destination dir, test is passed.
         assert os.path.exists(
             downloader._build_destination_path(
@@ -62,12 +56,6 @@ def test_aggtrades(tmpdir, asset, data_type, timeperiod_per_file):
             )
         )
     elif timeperiod_per_file == "monthly":
-        print(downloader._build_destination_path(
-            symbol="BTCBUSD",
-            historical_date="2021-01",
-            extension=".csv",
-            exclude_filename=False,
-        ))
         # BTCUSDT aggTrades monthly data is very heavy so use BTCBUSD for testing instead.
         downloader._download(symbol="BTCBUSD", historical_date="2021-01")
         # If exists csv file on destination dir, test is passed.
