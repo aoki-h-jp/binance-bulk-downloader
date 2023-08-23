@@ -26,8 +26,7 @@ def dynamic_metrics_test_params():
 
 
 @pytest.mark.parametrize(
-    "asset, data_type, timeperiod_per_file",
-    dynamic_metrics_test_params()
+    "asset, data_type, timeperiod_per_file", dynamic_metrics_test_params()
 )
 def test_metrics(tmpdir, asset, data_type, timeperiod_per_file):
     """

@@ -26,8 +26,7 @@ def dynamic_liquidationsnapshot_test_params():
 
 
 @pytest.mark.parametrize(
-    "asset, data_type, timeperiod_per_file",
-    dynamic_liquidationsnapshot_test_params()
+    "asset, data_type, timeperiod_per_file", dynamic_liquidationsnapshot_test_params()
 )
 def test_liquidationsnapshot(tmpdir, asset, data_type, timeperiod_per_file):
     """
