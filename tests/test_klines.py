@@ -50,7 +50,11 @@ def test_klines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
     )
     # If raise BinanceBulkDownloaderParamsError, test is passed.
     # If asset is spot and data_type is indexPriceKlines, markPriceKlines or premiumIndexKlines, raise BinanceBulkDownloaderParamsError.
-    if asset == "spot" and (data_type == "indexPriceKlines" or data_type == "markPriceKlines" or data_type == "premiumIndexKlines"):
+    if asset == "spot" and (
+        data_type == "indexPriceKlines"
+        or data_type == "markPriceKlines"
+        or data_type == "premiumIndexKlines"
+    ):
         with pytest.raises(BinanceBulkDownloaderParamsError):
             downloader._download(symbol="BTCUSDT", historical_date="2022-01-01")
     # If exists csv file on destination dir, test is passed.
