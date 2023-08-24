@@ -1,29 +1,30 @@
+"""
+Binance Bulk Downloader
+"""
 # import standard libraries
-import datetime
-import json
 import os
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
+from xml.etree import ElementTree
 from zipfile import BadZipfile
 
 # import third-party libraries
-import pandas as pd
 import requests
 from rich import print
 from rich.progress import track
-from tqdm import tqdm
 
 # import my libraries
-from .exceptions import BinanceBulkDownloaderParamsError
+from .exceptions import (BinacneBulkDownloaderDownloadError,
+                         BinanceBulkDownloaderParamsError)
 
 
 class BinanceBulkDownloader:
     _CHUNK_SIZE = 10
-    _BINANCE_API_BASE_URL = "https://data-api.binance.vision"
-    _BINANCE_DATA_BASE_URL = "https://data.binance.vision/data"
-    # TODO: To be corrected in the future due to errors because of symbol discrepancies.
-    # _FUTURES_ASSET = ("um", "cm")
-    _FUTURES_ASSET = ("um",)
+    _BINANCE_DATA_S3_BUCKET_URL = (
+        "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
+    )
+    _BINANCE_DATA_DOWNLOAD_BASE_URL = "https://data.binance.vision"
+    _FUTURES_ASSET = ("um", "cm")
     _OPTIONS_ASSET = ("option",)
     _ASSET = ("spot",)
     _DATA_TYPE_BY_ASSET = {
@@ -51,31 +52,30 @@ class BinanceBulkDownloader:
                 "trades",
             ),
         },
-        # TODO: To be corrected in the future due to errors because of symbol discrepancies.
-        # "cm": {
-        #     "daily": (
-        #         "aggTrades",
-        #         "bookDepth",
-        #         "bookTicker",
-        #         "indexPriceKlines",
-        #         "klines",
-        #         "liquidationSnapshot",
-        #         "markPriceKlines",
-        #         "metrics",
-        #         "premiumIndexKlines",
-        #         "trades",
-        #     ),
-        #     "monthly": (
-        #         "aggTrades",
-        #         "bookTicker",
-        #         "fundingRate",
-        #         "indexPriceKlines",
-        #         "klines",
-        #         "markPriceKlines",
-        #         "premiumIndexKlines",
-        #         "trades",
-        #     ),
-        # },
+        "cm": {
+            "daily": (
+                "aggTrades",
+                "bookDepth",
+                "bookTicker",
+                "indexPriceKlines",
+                "klines",
+                "liquidationSnapshot",
+                "markPriceKlines",
+                "metrics",
+                "premiumIndexKlines",
+                "trades",
+            ),
+            "monthly": (
+                "aggTrades",
+                "bookTicker",
+                "fundingRate",
+                "indexPriceKlines",
+                "klines",
+                "markPriceKlines",
+                "premiumIndexKlines",
+                "trades",
+            ),
+        },
         "spot": {
             "daily": ("aggTrades", "klines", "trades"),
             "monthly": ("aggTrades", "klines", "trades"),
@@ -89,6 +89,7 @@ class BinanceBulkDownloader:
         "premiumIndexKlines",
     )
     _DATA_FREQUENCY = (
+        "1s",
         "1m",
         "3m",
         "5m",
@@ -101,24 +102,9 @@ class BinanceBulkDownloader:
         "8h",
         "12h",
         "1d",
-        # TODO: To be corrected in the future due to errors because of date discrepancies.
-        # "3d",
-        # "1w",
-        # "1mo",
-    )
-    _INITIAL_DATE = datetime.datetime(2020, 1, 1)
-    TODAY = datetime.datetime.utcnow().today().strftime("%Y-%m-%d")
-    ALL_DATE = (
-        pd.date_range(_INITIAL_DATE, TODAY, freq="1d")
-        .to_series()
-        .dt.strftime("%Y-%m-%d")
-        .tolist()
-    )
-    ALL_MONTH = (
-        pd.date_range(_INITIAL_DATE, TODAY, freq="1M")
-        .to_series()
-        .dt.strftime("%Y-%m-%d")
-        .tolist()
+        "3d",
+        "1w",
+        "1mo",
     )
 
     def __init__(
@@ -127,7 +113,6 @@ class BinanceBulkDownloader:
         data_type="klines",
         data_frequency="1m",
         asset="um",
-        currency="USDT",
         timeperiod_per_file="daily",
     ) -> None:
         """
@@ -135,14 +120,12 @@ class BinanceBulkDownloader:
         :param data_type: Type of data to download (klines, aggTrades, etc.)
         :param data_frequency: Frequency of data to download (1m, 1h, 1d, etc.)
         :param asset: Type of asset to download (um, cm, spot, option)
-        :param currency: Type of currency to download (USDT, BTC, etc.)
         :param timeperiod_per_file: Time period per file (daily, monthly)
         """
         self._destination_dir = destination_dir
         self._data_type = data_type
         self._data_frequency = data_frequency
         self._asset = asset
-        self._currency = currency
         self._timeperiod_per_file = timeperiod_per_file
 
     def _check_params(self) -> None:
@@ -180,27 +163,59 @@ class BinanceBulkDownloader:
                 f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
             )
 
-    def _get_list_of_symbols(self) -> list:
-        """
-        Get list of symbols from Binance API (ExchangeInfo)
-        :return: list of symbols
-        """
-        if self._asset == "spot":
-            asset = "SPOT"
-        else:
-            asset = "MARGIN"
+        if self._data_frequency == "1s":
+            if self._asset == "spot":
+                pass
+            else:
+                raise BinanceBulkDownloaderParamsError(
+                    f"data_frequency 1s is not supported for {self._asset}."
+                )
 
-        url = "/".join(
-            [self._BINANCE_API_BASE_URL, f"api/v3/exchangeInfo?permissions={asset}"]
-        )
-        response = requests.get(url).text
-        return [
-            s
-            for s in map(
-                lambda symbol: symbol["symbol"], json.loads(response)["symbols"]
+    def _get_file_list_from_s3_bucket(
+        self, prefix, marker=None, print_info=True, accumulated_length=0
+    ) -> list:
+        """
+        Get files from s3 bucket
+        :param prefix: s3 bucket prefix
+        :param marker: marker
+        :param print_info: print info
+        :param accumulated_length: accumulated length from previous recursive calls
+        :return: list of files
+        """
+        if print_info:
+            print(f"[bold blue]Getting file list[/bold blue]: " + prefix)
+        files = []
+        params = {"prefix": prefix, "max-keys": 1000}
+        if marker:
+            params["marker"] = marker
+
+        response = requests.get(self._BINANCE_DATA_S3_BUCKET_URL, params=params)
+        tree = ElementTree.fromstring(response.content)
+
+        for content in tree.findall(
+            "{http://s3.amazonaws.com/doc/2006-03-01/}Contents"
+        ):
+            key = content.find("{http://s3.amazonaws.com/doc/2006-03-01/}Key").text
+            files.append(key)
+
+        accumulated_length += len(files)
+        print(f"[green]Found {accumulated_length} files[/green]")
+        # Check if there are more files to retrieve
+        is_truncated = tree.find(
+            "{http://s3.amazonaws.com/doc/2006-03-01/}IsTruncated"
+        ).text
+        if is_truncated == "true":
+            last_key = files[-1]
+            files.extend(
+                self._get_file_list_from_s3_bucket(
+                    prefix,
+                    marker=last_key,
+                    print_info=False,
+                    accumulated_length=accumulated_length,
+                )
             )
-            if s.endswith(self._currency)
-        ]
+
+        return files
 
     def _make_asset_type(self) -> str:
         """
@@ -229,98 +244,43 @@ class BinanceBulkDownloader:
         """
         self._timeperiod_per_file = timeperiod_per_file
 
-    def _build_url(self, symbol, historical_date) -> str:
+    def _build_prefix(self) -> str:
         """
-        Build URL to download
-        :param symbol: symbol (BTCUSDT, etc.)
-        :param historical_date: historical date (2020-01-01, etc.)
-        :return: URL
+        Build prefix to download
+        :return: s3 bucket prefix
         """
-        if self._data_type in self._DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE:
-            filename = f"{symbol}-{self._data_frequency}-{historical_date}.zip"
-            url_parts = [
-                self._make_asset_type(),
-                self._timeperiod_per_file,
-                self._data_type,
-                symbol,
-                self._data_frequency,
-                filename,
-            ]
-        else:
-            filename = f"{symbol}-{self._data_type}-{historical_date}.zip"
-            url_parts = [
-                self._make_asset_type(),
-                self._timeperiod_per_file,
-                self._data_type,
-                symbol,
-                filename,
-            ]
-        url_parts.insert(0, self._BINANCE_DATA_BASE_URL)
-        url = "/".join(url_parts)
-        return url
+        url_parts = [
+            "data",
+            self._make_asset_type(),
+            self._timeperiod_per_file,
+            self._data_type,
+        ]
+        prefix = "/".join(url_parts)
+        return prefix
 
-    def _build_destination_path(
-        self, symbol, historical_date, extension=".zip", exclude_filename=False
-    ) -> str:
-        """
-        Build destination path to save
-        :param symbol: symbol (BTCUSDT, etc.)
-        :param historical_date: historical date (2020-01-01, etc.)
-        :param extension: extension (.zip, .csv)
-        :param exclude_filename: exclude filename from path
-        :return: destination path
-        """
-        if self._data_type in self._DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE:
-            filename = f"{symbol}-{self._data_frequency}-{historical_date}{extension}"
-            destination_path_parts = [
-                self._destination_dir,
-                self._make_asset_type(),
-                self._asset,
-                self._timeperiod_per_file,
-                self._data_type,
-                symbol,
-                self._data_frequency,
-                filename,
-            ]
-        else:
-            filename = f"{symbol}-{self._data_type}-{historical_date}{extension}"
-            destination_path_parts = [
-                self._destination_dir,
-                self._make_asset_type(),
-                self._asset,
-                self._timeperiod_per_file,
-                self._data_type,
-                symbol,
-                filename,
-            ]
-        if exclude_filename:
-            destination_path_parts = destination_path_parts[:-1]
-        destination_path = os.path.join(*destination_path_parts)
-        return destination_path
-
-    def _download(self, symbol, historical_date) -> None:
+    def _download(self, prefix) -> None:
         """
         Execute download
-        :param symbol: symbol (BTCUSDT, etc.)
-        :param historical_date: historical date (2020-01-01, etc.)
+        :param prefix: s3 bucket prefix
         :return: None
         """
         self._check_params()
-        url = self._build_url(symbol, historical_date)
-        print(f"[bold blue]Downloading {url}[/bold blue]: " + url)
-        zip_destination_path = self._build_destination_path(symbol, historical_date)
-        csv_destination_path = self._build_destination_path(
-            symbol, historical_date, extension=".csv"
+        zip_destination_path = os.path.join(self._destination_dir, prefix)
+        csv_destination_path = os.path.join(
+            self._destination_dir, prefix.replace(".zip", ".csv")
         )
-        # ディレクトリが存在しない場合は作る
+
+        # Make directory if not exists
         if not os.path.exists(os.path.dirname(zip_destination_path)):
             os.makedirs(os.path.dirname(zip_destination_path))
 
-        # ファイルが既に存在する場合はダウンロードしない
+        # Don't download if already exists
         if os.path.exists(csv_destination_path):
             print(f"[yellow]Already exists: {csv_destination_path}[/yellow]")
             return
 
+        url = f"{self._BINANCE_DATA_DOWNLOAD_BASE_URL}/{prefix}"
+        print(f"[bold blue]Downloading {url}[/bold blue]")
         try:
             response = requests.get(url, zip_destination_path)
             print(f"[green]Downloaded: {url}[/green]")
@@ -333,50 +293,24 @@ class BinanceBulkDownloader:
                 file.write(chunk)
 
         try:
+            unzipped_path = "/".join(zip_destination_path.split("/")[:-1])
             with zipfile.ZipFile(zip_destination_path) as existing_zip:
                 existing_zip.extractall(
-                    csv_destination_path.replace(
-                        csv_destination_path,
-                        self._build_destination_path(
-                            symbol, historical_date, extension="", exclude_filename=True
-                        ),
-                    )
+                    csv_destination_path.replace(csv_destination_path, unzipped_path)
                 )
                 print(f"[green]Unzipped: {zip_destination_path}[/green]")
         except BadZipfile:
             print(f"[red]Bad Zip File: {zip_destination_path}[/red]")
             os.remove(zip_destination_path)
             print(f"[green]Removed: {zip_destination_path}[/green]")
-            return
+            raise BinacneBulkDownloaderDownloadError
 
-        # 解凍したらZIPファイルは削除する
+        # Delete zip file
         os.remove(zip_destination_path)
         print(f"[green]Removed: {zip_destination_path}[/green]")
 
-    def _download_concurrently(self, symbol) -> None:
-        """
-        Execute download concurrently
-        :param symbol: symbol (BTCUSDT, etc.)
-        :return: None
-        """
-        if self._timeperiod_per_file == "daily":
-            historical_dates = self.ALL_DATE
-        elif self._timeperiod_per_file == "monthly":
-            historical_dates = self.ALL_MONTH
-        else:
-            raise BinanceBulkDownloaderParamsError(
-                "timeperiod_per_file must be daily or monthly."
-            )
-
-        for date_chunk in track(
-            self.make_chunks(historical_dates, self._CHUNK_SIZE),
-            description="Downloading",
-        ):
-            with ThreadPoolExecutor() as executor:
-                executor.map(self._download, [symbol] * len(date_chunk), date_chunk)
-
     @staticmethod
-    def make_chunks(lst, n):
+    def make_chunks(lst, n) -> list:
         """
         Make chunks
         :param lst: Raw list
@@ -387,15 +321,19 @@ class BinanceBulkDownloader:
 
     def run_download(self) -> None:
         """
-        Running download by symbol
+        Execute download concurrently
         :return: None
         """
-        symbols = self._get_list_of_symbols()
-        for sym in tqdm(symbols, desc="Symbols"):
-            print(f"[bold blue]Start download {sym}[/bold blue]")
-            self._download_concurrently(sym)
-            print(f"[green]Downloaded: {sym}[/green]")
-
-        print(
-            f"[bold blue]Finish download {self._data_type} {self._data_frequency}[/bold blue]"
-        )
+        print(f"[bold blue]Downloading {self._data_type}[/bold blue]")
+        zip_files = [
+            prefix
+            for prefix in self._get_file_list_from_s3_bucket(self._build_prefix())
+            if prefix.endswith(".zip")
+        ]
+        # TODO: Filters by data_frequency if needed
+        for prefix_chunk in track(
+            self.make_chunks(zip_files, self._CHUNK_SIZE),
+            description="Downloading",
+        ):
+            with ThreadPoolExecutor() as executor:
+                executor.map(self._download, prefix_chunk)
