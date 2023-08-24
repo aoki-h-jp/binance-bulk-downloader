@@ -37,6 +37,12 @@ downloader = BinanceBulkDownloader(data_type='aggTrades')
 downloader.run_download()
 ```
 
+## pytest
+
+```bash
+python -m pytest
+```
+
 ## Status
 This library is under development. Not all unit tests have been completed yet and the behaviour is unstable.
 
@@ -46,16 +52,16 @@ This library is under development. Not all unit tests have been completed yet an
 
 | data_type           | spot | um   | cm   | options | 
 | :------------------ | :--: | :--: | :--: | :-----: | 
-| aggTrades           | ✅   | ✅   | ❌ | ❎      | 
-| bookDepth           | ❎   | ✅   | ❌ | ❎      | 
-| bookTicker          | ❎   | ✅   | ❌ | ❎      | 
-| fundingRate         | ❎   | ✅   | ❌ | ❎      | 
-| indexPriceKlines    | ❎   | ✅   | ❌ | ❎      | 
+| aggTrades           | ✅   | ✅   | ✅ | ❎      | 
+| bookDepth           | ❎   | ✅   | ✅ | ❎      | 
+| bookTicker          | ❎   | ✅   | ✅ | ❎      | 
+| fundingRate         | ❎   | ✅   | ✅ | ❎      | 
+| indexPriceKlines    | ❎   | 🚧   | 🚧 | ❎      | 
 | klines              | ✅   | ✅   | ❌ | ❎      | 
-| liquidationSnapshot | ❎   | ✅   | ❌ | ❎      | 
-| markPriceKlines     | ❎   | ✅   | ❌ | ❎      | 
-| metrics             | ❎   | ✅   | ❌ | ❎      | 
-| premiumIndexKlines  | ❎   | ✅   | ❌ | ❎      | 
+| liquidationSnapshot | ❎   | ✅   | ✅ | ❎      | 
+| markPriceKlines     | ❎   | 🚧   | 🚧 | ❎      | 
+| metrics             | ❎   | ✅   | ✅ | ❎      | 
+| premiumIndexKlines  | ❎   | 🚧   | 🚧 | ❎      | 
 | trades              | ✅   | ✅   | ❌ | ❎      | 
 | BVOLIndex           | ❎   | ❎   | ❎   | ❌    | 
 | EOHSummary          | ❎   | ❎   | ❎   | ❌    | 
@@ -64,6 +70,7 @@ This library is under development. Not all unit tests have been completed yet an
 
 | data_frequency | spot | um   | cm   | options |
 | :------------- | :--: | :--: | :--: | :-----: |
+| 1s             | ✅   | ❎   | ❎   | ❎      |
 | 1m             | ✅   | ✅   | ❌ | ❎      |
 | 3m             | ✅   | ✅   | ❌ | ❎      |
 | 5m             | ✅   | ✅   | ❌ | ❎      |

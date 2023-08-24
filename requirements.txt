@@ -4,3 +4,4 @@ setuptools~=68.1.2
 rich~=10.16.2
 tqdm~=4.65.0
 pytest~=4.6.11
+boto3~=1.28.32

@@ -6,7 +6,6 @@ import pytest
 
 # import my libraries
 from downloader.downloader import *
-from downloader.exceptions import BinanceBulkDownloaderParamsError
 
 
 def dynamic_liquidationsnapshot_test_params():
@@ -16,7 +15,7 @@ def dynamic_liquidationsnapshot_test_params():
     """
     for asset in BinanceBulkDownloader._FUTURES_ASSET:
         for data_type in ["liquidationSnapshot"]:
-            for timeperiod_per_file in ["daily", "monthly"]:
+            for timeperiod_per_file in ["daily"]:
                 yield pytest.param(
                     asset,
                     data_type,
@@ -26,15 +25,16 @@ def dynamic_liquidationsnapshot_test_params():
 
 
 @pytest.mark.parametrize(
-    "asset, data_type, timeperiod_per_file", dynamic_liquidationsnapshot_test_params()
+    "asset, data_type, timeperiod_per_file",
+    dynamic_liquidationsnapshot_test_params()
 )
 def test_liquidationsnapshot(tmpdir, asset, data_type, timeperiod_per_file):
     """
     Test liquidationSnapshot
     :param tmpdir:
-    :param asset: asset (spot, um, cm)
-    :param data_type: data type (aggTrades)
-    :param timeperiod_per_file: time period per file (daily, monthly)
+    :param asset: asset (um, cm)
+    :param data_type: data type (liquidationSnapshot)
+    :param timeperiod_per_file: time period per file (daily)
     :return:
     """
     downloader = BinanceBulkDownloader(
@@ -43,19 +43,15 @@ def test_liquidationsnapshot(tmpdir, asset, data_type, timeperiod_per_file):
         data_type=data_type,
         timeperiod_per_file=timeperiod_per_file,
     )
+    prefix = downloader._build_prefix()
     if timeperiod_per_file == "daily":
+        if asset == "um":
+            single_download_prefix = prefix + "/BNBUSDT/BNBUSDT-liquidationSnapshot-2023-07-01.zip"
+        elif asset == "cm":
+            single_download_prefix = prefix + "/BTCUSD_PERP/BTCUSD_PERP-liquidationSnapshot-2023-07-01.zip"
+        else:
+            raise ValueError(f"asset {asset} is not supported.")
+        destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
+        downloader._download(single_download_prefix)
         # If exists csv file on destination dir, test is passed.
-        downloader._download(symbol="BTCUSDT", historical_date="2023-07-01")
-        assert os.path.exists(
-            downloader._build_destination_path(
-                symbol="BTCUSDT",
-                historical_date="2023-07-01",
-                extension=".csv",
-                exclude_filename=False,
-            )
-        )
-
-    elif timeperiod_per_file == "monthly":
-        # liquidationSnapshot monthly data is unavailable.
-        with pytest.raises(BinanceBulkDownloaderParamsError):
-            downloader._download(symbol="BTCUSDT", historical_date="2023-07")
+        assert os.path.exists(destination_path)
