@@ -5,7 +5,7 @@
 ## Python library for bulk downloading Binance historical data
 A Python library to efficiently and concurrently download historical data files from Binance.
 
-Supports multiple asset types (spot, futures, options) and various data frequencies.
+Supports all asset types (spot, USDT-M, COIN-M, options) and all data frequencies.
 
 Status on available data types is shown below.
 
@@ -56,37 +56,39 @@ This library is under development. Not all unit tests have been completed yet an
 | bookDepth           | ❎   | ✅   | ✅ | ❎      | 
 | bookTicker          | ❎   | ✅   | ✅ | ❎      | 
 | fundingRate         | ❎   | ✅   | ✅ | ❎      | 
-| indexPriceKlines    | ❎   | 🚧   | 🚧 | ❎      | 
-| klines              | ✅   | ✅   | ❌ | ❎      | 
+| indexPriceKlines    | ❎   | ✅   | ✅ | ❎      | 
+| klines              | ✅   | ✅   | ✅ | ❎      | 
 | liquidationSnapshot | ❎   | ✅   | ✅ | ❎      | 
-| markPriceKlines     | ❎   | 🚧   | 🚧 | ❎      | 
+| markPriceKlines     | ❎   | ✅   | ✅ | ❎      | 
 | metrics             | ❎   | ✅   | ✅ | ❎      | 
-| premiumIndexKlines  | ❎   | 🚧   | 🚧 | ❎      | 
-| trades              | ✅   | ✅   | ❌ | ❎      | 
-| BVOLIndex           | ❎   | ❎   | ❎   | ❌    | 
-| EOHSummary          | ❎   | ❎   | ❎   | ❌    | 
+| premiumIndexKlines  | ❎   | ✅   | ✅ | ❎      | 
+| trades              | ✅   | ✅   | ✅ | ❎      | 
+| BVOLIndex           | ❎   | ❎   | ❎ | ✅      | 
+| EOHSummary          | ❎   | ❎   | ❎ | ✅      | 
 
 ### by data_frequency (klines, indexPriceKlines, markPriceKlines, premiumIndexKlines)
 
 | data_frequency | spot | um   | cm   | options |
 | :------------- | :--: | :--: | :--: | :-----: |
-| 1s             | ✅   | ❎   | ❎   | ❎      |
-| 1m             | ✅   | ✅   | ❌ | ❎      |
-| 3m             | ✅   | ✅   | ❌ | ❎      |
-| 5m             | ✅   | ✅   | ❌ | ❎      |
-| 15m            | ✅   | ✅   | ❌ | ❎      |
-| 30m            | ✅   | ✅   | ❌ | ❎      |
-| 1h             | ✅   | ✅   | ❌ | ❎      |
-| 2h             | ✅   | ✅   | ❌ | ❎      |
-| 4h             | ✅   | ✅   | ❌ | ❎      |
-| 6h             | ✅   | ✅   | ❌ | ❎      |
-| 8h             | ✅   | ✅   | ❌ | ❎      |
-| 12h            | ✅   | ✅   | ❌ | ❎      |
-| 1d             | ✅   | ✅   | ❌ | ❎      |
-| 3d             | ❌   | ❌   | ❌ | ❎      |
-| 1w             | ❌   | ❌   | ❌ | ❎      |
-| 1mo            | ❌   | ❌   | ❌ | ❎      |
+| 1s             | ✅   | ❎   | ❎ | ❎      |
+| 1m             | ✅   | ✅   | ✅ | ❎      |
+| 3m             | ✅   | ✅   | ✅ | ❎      |
+| 5m             | ✅   | ✅   | ✅ | ❎      |
+| 15m            | ✅   | ✅   | ✅ | ❎      |
+| 30m            | ✅   | ✅   | ✅ | ❎      |
+| 1h             | ✅   | ✅   | ✅ | ❎      |
+| 2h             | ✅   | ✅   | ✅ | ❎      |
+| 4h             | ✅   | ✅   | ✅ | ❎      |
+| 6h             | ✅   | ✅   | ✅ | ❎      |
+| 8h             | ✅   | ✅   | ✅ | ❎      |
+| 12h            | ✅   | ✅   | ✅ | ❎      |
+| 1d             | ✅   | ✅   | ✅ | ❎      |
+| 3d             | ✅   | ✅   | ✅ | ❎      |
+| 1w             | ✅   | ✅   | ✅ | ❎      |
+| 1mo            | ✅   | ✅   | ✅ | ❎      |
 
+## If you want to report a bug or request a feature
+Please create an issue on this repository!
 
 ## Disclaimer
 This project is for educational purposes only. You should not construe any such information or other material as legal,

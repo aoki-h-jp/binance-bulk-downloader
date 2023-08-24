@@ -227,7 +227,7 @@ class BinanceBulkDownloader:
         elif self._asset in "cm":
             asset_type = "futures/cm"
         elif self._asset in self._OPTIONS_ASSET:
-            asset_type = "options"
+            asset_type = "option"
         elif self._asset in self._ASSET:
             asset_type = "spot"
         else:
