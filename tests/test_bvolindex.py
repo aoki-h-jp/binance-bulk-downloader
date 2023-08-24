@@ -25,8 +25,7 @@ def dynamic_bvolindex_test_params():
 
 
 @pytest.mark.parametrize(
-    "asset, data_type, timeperiod_per_file",
-    dynamic_bvolindex_test_params()
+    "asset, data_type, timeperiod_per_file", dynamic_bvolindex_test_params()
 )
 def test_bvolindex(tmpdir, asset, data_type, timeperiod_per_file):
     """
@@ -44,7 +43,9 @@ def test_bvolindex(tmpdir, asset, data_type, timeperiod_per_file):
         timeperiod_per_file=timeperiod_per_file,
     )
     prefix = downloader._build_prefix()
-    single_download_prefix = prefix + "/BTCBVOLUSDT/BTCBVOLUSDT-BVOLIndex-2023-07-01.zip"
+    single_download_prefix = (
+        prefix + "/BTCBVOLUSDT/BTCBVOLUSDT-BVOLIndex-2023-07-01.zip"
+    )
     destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
     downloader._download(single_download_prefix)
     # If exists csv file on destination dir, test is passed.

@@ -28,9 +28,11 @@ def dynamic_premiumindexklines_test_params():
 
 @pytest.mark.parametrize(
     "asset, data_type, data_frequency, timeperiod_per_file",
-    dynamic_premiumindexklines_test_params()
+    dynamic_premiumindexklines_test_params(),
 )
-def test_premiumindexklines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
+def test_premiumindexklines(
+    tmpdir, asset, data_type, data_frequency, timeperiod_per_file
+):
     """
     Test premiumindexklines
     :param tmpdir:

@@ -28,7 +28,7 @@ def dynamic_markpriceklines_test_params():
 
 @pytest.mark.parametrize(
     "asset, data_type, data_frequency, timeperiod_per_file",
-    dynamic_markpriceklines_test_params()
+    dynamic_markpriceklines_test_params(),
 )
 def test_markpriceklines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
     """

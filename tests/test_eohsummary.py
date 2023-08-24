@@ -25,8 +25,7 @@ def dynamic_eohsummary_test_params():
 
 
 @pytest.mark.parametrize(
-    "asset, data_type, timeperiod_per_file",
-    dynamic_eohsummary_test_params()
+    "asset, data_type, timeperiod_per_file", dynamic_eohsummary_test_params()
 )
 def test_eohsummary(tmpdir, asset, data_type, timeperiod_per_file):
     """
