@@ -48,7 +48,9 @@ def test_fundingrate(tmpdir, asset, data_type, timeperiod_per_file):
         if asset == "um":
             single_download_prefix = prefix + "/BNBUSDT/BNBUSDT-fundingRate-2023-05.zip"
         elif asset == "cm":
-            single_download_prefix = prefix + "/BTCUSD_PERP/BTCUSD_PERP-fundingRate-2023-05.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-fundingRate-2023-05.zip"
+            )
         else:
             raise ValueError(f"asset {asset} is not supported.")
         destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))

@@ -25,8 +25,7 @@ def dynamic_liquidationsnapshot_test_params():
 
 
 @pytest.mark.parametrize(
-    "asset, data_type, timeperiod_per_file",
-    dynamic_liquidationsnapshot_test_params()
+    "asset, data_type, timeperiod_per_file", dynamic_liquidationsnapshot_test_params()
 )
 def test_liquidationsnapshot(tmpdir, asset, data_type, timeperiod_per_file):
     """
@@ -46,9 +45,13 @@ def test_liquidationsnapshot(tmpdir, asset, data_type, timeperiod_per_file):
     prefix = downloader._build_prefix()
     if timeperiod_per_file == "daily":
         if asset == "um":
-            single_download_prefix = prefix + "/BNBUSDT/BNBUSDT-liquidationSnapshot-2023-07-01.zip"
+            single_download_prefix = (
+                prefix + "/BNBUSDT/BNBUSDT-liquidationSnapshot-2023-07-01.zip"
+            )
         elif asset == "cm":
-            single_download_prefix = prefix + "/BTCUSD_PERP/BTCUSD_PERP-liquidationSnapshot-2023-07-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-liquidationSnapshot-2023-07-01.zip"
+            )
         else:
             raise ValueError(f"asset {asset} is not supported.")
         destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))

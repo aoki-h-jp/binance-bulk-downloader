@@ -47,11 +47,17 @@ def test_aggtrades(tmpdir, asset, data_type, timeperiod_per_file):
     prefix = downloader._build_prefix()
     if timeperiod_per_file == "daily":
         if asset == "spot":
-            single_download_prefix = prefix + "/BTCUSDT/BTCUSDT-aggTrades-2021-01-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSDT/BTCUSDT-aggTrades-2021-01-01.zip"
+            )
         elif asset == "um":
-            single_download_prefix = prefix + "/BTCUSDT/BTCUSDT-aggTrades-2021-01-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSDT/BTCUSDT-aggTrades-2021-01-01.zip"
+            )
         elif asset == "cm":
-            single_download_prefix = prefix + "/BTCUSD_PERP/BTCUSD_PERP-aggTrades-2021-01-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-aggTrades-2021-01-01.zip"
+            )
         else:
             raise ValueError(f"asset {asset} is not supported.")
         destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
@@ -65,11 +71,12 @@ def test_aggtrades(tmpdir, asset, data_type, timeperiod_per_file):
         elif asset == "um":
             single_download_prefix = prefix + "/BTCBUSD/BTCBUSD-aggTrades-2021-01.zip"
         elif asset == "cm":
-            single_download_prefix = prefix + "/BTCUSD_PERP/BTCUSD_PERP-aggTrades-2021-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-aggTrades-2021-01.zip"
+            )
         else:
             raise ValueError(f"asset {asset} is not supported.")
         destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
         downloader._download(single_download_prefix)
         # If exists csv file on destination dir, test is passed.
         assert os.path.exists(destination_path)
-

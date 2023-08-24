@@ -5,21 +5,24 @@ Binance Bulk Downloader
 import os
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
+from xml.etree import ElementTree
 from zipfile import BadZipfile
 
 # import third-party libraries
 import requests
 from rich import print
 from rich.progress import track
-from xml.etree import ElementTree
 
 # import my libraries
-from .exceptions import BinanceBulkDownloaderParamsError, BinacneBulkDownloaderDownloadError
+from .exceptions import (BinacneBulkDownloaderDownloadError,
+                         BinanceBulkDownloaderParamsError)
 
 
 class BinanceBulkDownloader:
     _CHUNK_SIZE = 10
-    _BINANCE_DATA_S3_BUCKET_URL = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
+    _BINANCE_DATA_S3_BUCKET_URL = (
+        "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision"
+    )
     _BINANCE_DATA_DOWNLOAD_BASE_URL = "https://data.binance.vision"
     _FUTURES_ASSET = ("um", "cm")
     _OPTIONS_ASSET = ("option",)
@@ -168,7 +171,9 @@ class BinanceBulkDownloader:
                     f"data_frequency 1s is not supported for {self._asset}."
                 )
 
-    def _get_file_list_from_s3_bucket(self, prefix, marker=None, print_info=True, accumulated_length=0) -> list:
+    def _get_file_list_from_s3_bucket(
+        self, prefix, marker=None, print_info=True, accumulated_length=0
+    ) -> list:
         """
         Get files from s3 bucket
         :param prefix: s3 bucket prefix
@@ -187,17 +192,28 @@ class BinanceBulkDownloader:
         response = requests.get(self._BINANCE_DATA_S3_BUCKET_URL, params=params)
         tree = ElementTree.fromstring(response.content)
 
-        for content in tree.findall('{http://s3.amazonaws.com/doc/2006-03-01/}Contents'):
-            key = content.find('{http://s3.amazonaws.com/doc/2006-03-01/}Key').text
+        for content in tree.findall(
+            "{http://s3.amazonaws.com/doc/2006-03-01/}Contents"
+        ):
+            key = content.find("{http://s3.amazonaws.com/doc/2006-03-01/}Key").text
             files.append(key)
 
         accumulated_length += len(files)
         print(f"[green]Found {accumulated_length} files[/green]")
         # Check if there are more files to retrieve
-        is_truncated = tree.find('{http://s3.amazonaws.com/doc/2006-03-01/}IsTruncated').text
+        is_truncated = tree.find(
+            "{http://s3.amazonaws.com/doc/2006-03-01/}IsTruncated"
+        ).text
         if is_truncated == "true":
             last_key = files[-1]
-            files.extend(self._get_file_list_from_s3_bucket(prefix, marker=last_key, print_info=False, accumulated_length=accumulated_length))
+            files.extend(
+                self._get_file_list_from_s3_bucket(
+                    prefix,
+                    marker=last_key,
+                    print_info=False,
+                    accumulated_length=accumulated_length,
+                )
+            )
 
         return files
 
@@ -250,7 +266,9 @@ class BinanceBulkDownloader:
         """
         self._check_params()
         zip_destination_path = os.path.join(self._destination_dir, prefix)
-        csv_destination_path = os.path.join(self._destination_dir, prefix.replace(".zip", ".csv"))
+        csv_destination_path = os.path.join(
+            self._destination_dir, prefix.replace(".zip", ".csv")
+        )
 
         # Make directory if not exists
         if not os.path.exists(os.path.dirname(zip_destination_path)):
@@ -278,10 +296,7 @@ class BinanceBulkDownloader:
             unzipped_path = "/".join(zip_destination_path.split("/")[:-1])
             with zipfile.ZipFile(zip_destination_path) as existing_zip:
                 existing_zip.extractall(
-                    csv_destination_path.replace(
-                        csv_destination_path,
-                        unzipped_path
-                    )
+                    csv_destination_path.replace(csv_destination_path, unzipped_path)
                 )
                 print(f"[green]Unzipped: {zip_destination_path}[/green]")
         except BadZipfile:
@@ -310,7 +325,11 @@ class BinanceBulkDownloader:
         :return: None
         """
         print(f"[bold blue]Downloading {self._data_type}[/bold blue]")
-        zip_files = [prefix for prefix in self._get_file_list_from_s3_bucket(self._build_prefix()) if prefix.endswith(".zip")]
+        zip_files = [
+            prefix
+            for prefix in self._get_file_list_from_s3_bucket(self._build_prefix())
+            if prefix.endswith(".zip")
+        ]
         # TODO: Filters by data_frequency if needed
         for prefix_chunk in track(
             self.make_chunks(zip_files, self._CHUNK_SIZE),

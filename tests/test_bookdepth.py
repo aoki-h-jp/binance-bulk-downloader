@@ -46,9 +46,13 @@ def test_bookdepth(tmpdir, asset, data_type, timeperiod_per_file):
     prefix = downloader._build_prefix()
     if timeperiod_per_file == "daily":
         if asset == "um":
-            single_download_prefix = prefix + "/BTCUSDT/BTCUSDT-bookDepth-2023-01-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSDT/BTCUSDT-bookDepth-2023-01-01.zip"
+            )
         elif asset == "cm":
-            single_download_prefix = prefix + "/BTCUSD_PERP/BTCUSD_PERP-bookDepth-2023-01-01.zip"
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-bookDepth-2023-01-01.zip"
+            )
         else:
             raise ValueError(f"asset {asset} is not supported.")
         destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
