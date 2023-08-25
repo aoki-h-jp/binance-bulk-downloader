@@ -11,8 +11,8 @@ from zipfile import BadZipfile
 # import third-party libraries
 import requests
 # import my libraries
-from exceptions import (BinacneBulkDownloaderDownloadError,
-                        BinanceBulkDownloaderParamsError)
+from .exceptions import (BinacneBulkDownloaderDownloadError,
+                         BinanceBulkDownloaderParamsError)
 from rich import print
 from rich.progress import track
 
