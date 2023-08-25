@@ -10,11 +10,12 @@ from zipfile import BadZipfile
 
 # import third-party libraries
 import requests
+from rich import print
+from rich.progress import track
+
 # import my libraries
 from .exceptions import (BinacneBulkDownloaderDownloadError,
                          BinanceBulkDownloaderParamsError)
-from rich import print
-from rich.progress import track
 
 
 class BinanceBulkDownloader:
