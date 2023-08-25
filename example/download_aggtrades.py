@@ -16,5 +16,7 @@ downloader = BinanceBulkDownloader(data_type="aggTrades", asset="cm")
 downloader.run_download()
 
 # download monthly aggTrades (asset="cm", timeperiod_per_file="monthly")
-downloader = BinanceBulkDownloader(data_type="aggTrades", asset="cm", timeperiod_per_file="monthly")
+downloader = BinanceBulkDownloader(
+    data_type="aggTrades", asset="cm", timeperiod_per_file="monthly"
+)
 downloader.run_download()

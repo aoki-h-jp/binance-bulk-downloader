@@ -32,7 +32,9 @@ downloader = BinanceBulkDownloader(data_frequency="1d", asset="cm")
 downloader.run_download()
 
 # download monthly klines (frequency: "1m", asset="cm", timeperiod_per_file="monthly")
-downloader = BinanceBulkDownloader(data_frequency="1m", asset="cm", timeperiod_per_file="monthly")
+downloader = BinanceBulkDownloader(
+    data_frequency="1m", asset="cm", timeperiod_per_file="monthly"
+)
 downloader.run_download()
 
 # download klines (frequency: "1m", asset="spot")
@@ -48,5 +50,7 @@ downloader = BinanceBulkDownloader(data_frequency="1d", asset="spot")
 downloader.run_download()
 
 # download monthly klines (frequency: "1m", asset="spot", timeperiod_per_file="monthly")
-downloader = BinanceBulkDownloader(data_frequency="1m", asset="spot", timeperiod_per_file="monthly")
+downloader = BinanceBulkDownloader(
+    data_frequency="1m", asset="spot", timeperiod_per_file="monthly"
+)
 downloader.run_download()
