@@ -8,14 +8,13 @@ import pytest
 from downloader.downloader import *
 
 
-def dynamic_klines_test_params():
+def dynamic_premiumindexklines_test_params():
     """
-    Generate params for klines tests
+    Generate params for premiumindexklines tests
     :return:
     """
-    assets = list(BinanceBulkDownloader._FUTURES_ASSET + BinanceBulkDownloader._ASSET)
-    for asset in assets:
-        for data_type in ["klines"]:
+    for asset in BinanceBulkDownloader._FUTURES_ASSET:
+        for data_type in ["premiumIndexKlines"]:
             for data_frequency in BinanceBulkDownloader._DATA_FREQUENCY:
                 for timeperiod_per_file in ["daily", "monthly"]:
                     yield pytest.param(
@@ -29,14 +28,16 @@ def dynamic_klines_test_params():
 
 @pytest.mark.parametrize(
     "asset, data_type, data_frequency, timeperiod_per_file",
-    dynamic_klines_test_params(),
+    dynamic_premiumindexklines_test_params(),
 )
-def test_klines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
+def test_premiumindexklines(
+    tmpdir, asset, data_type, data_frequency, timeperiod_per_file
+):
     """
-    Test klines
+    Test premiumindexklines
     :param tmpdir:
     :param asset: asset (spot, um, cm)
-    :param data_type: data type (klines)
+    :param data_type: data type (premiumIndexKlines)
     :param data_frequency: data frequency (1s, 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1mo)
     :param timeperiod_per_file: time period per file (daily, monthly)
     :return:
@@ -91,7 +92,7 @@ def test_klines(tmpdir, asset, data_type, data_frequency, timeperiod_per_file):
             elif asset == "um":
                 single_download_prefix = (
                     prefix
-                    + f"/BTCUSDT/{data_frequency}/BTCUSDT-{data_frequency}-2023-06-15.zip"
+                    + f"/BTCUSDT/{data_frequency}/BTCUSDT-{data_frequency}-2023-06-14.zip"
                 )
             elif asset == "cm":
                 single_download_prefix = (

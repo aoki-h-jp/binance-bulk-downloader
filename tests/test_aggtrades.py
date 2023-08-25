@@ -44,26 +44,39 @@ def test_aggtrades(tmpdir, asset, data_type, timeperiod_per_file):
         data_type=data_type,
         timeperiod_per_file=timeperiod_per_file,
     )
+    prefix = downloader._build_prefix()
     if timeperiod_per_file == "daily":
-        downloader._download(symbol="BTCUSDT", historical_date="2022-01-01")
-        # If exists csv file on destination dir, test is passed.
-        assert os.path.exists(
-            downloader._build_destination_path(
-                symbol="BTCUSDT",
-                historical_date="2022-01-01",
-                extension=".csv",
-                exclude_filename=False,
+        if asset == "spot":
+            single_download_prefix = (
+                prefix + "/BTCUSDT/BTCUSDT-aggTrades-2021-01-01.zip"
             )
-        )
+        elif asset == "um":
+            single_download_prefix = (
+                prefix + "/BTCUSDT/BTCUSDT-aggTrades-2021-01-01.zip"
+            )
+        elif asset == "cm":
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-aggTrades-2021-01-01.zip"
+            )
+        else:
+            raise ValueError(f"asset {asset} is not supported.")
+        destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
+        downloader._download(single_download_prefix)
+        # If exists csv file on destination dir, test is passed.
+        assert os.path.exists(destination_path)
     elif timeperiod_per_file == "monthly":
-        # BTCUSDT aggTrades monthly data is very heavy so use BTCBUSD for testing instead.
-        downloader._download(symbol="BTCBUSD", historical_date="2021-01")
-        # If exists csv file on destination dir, test is passed.
-        assert os.path.exists(
-            downloader._build_destination_path(
-                symbol="BTCBUSD",
-                historical_date="2021-01",
-                extension=".csv",
-                exclude_filename=False,
+        # BTCUSDT monthly data is too large, so use BTCBUSD instead.
+        if asset == "spot":
+            single_download_prefix = prefix + "/BTCBUSD/BTCBUSD-aggTrades-2021-01.zip"
+        elif asset == "um":
+            single_download_prefix = prefix + "/BTCBUSD/BTCBUSD-aggTrades-2021-01.zip"
+        elif asset == "cm":
+            single_download_prefix = (
+                prefix + "/BTCUSD_PERP/BTCUSD_PERP-aggTrades-2021-01.zip"
             )
-        )
+        else:
+            raise ValueError(f"asset {asset} is not supported.")
+        destination_path = tmpdir.join(single_download_prefix.replace(".zip", ".csv"))
+        downloader._download(single_download_prefix)
+        # If exists csv file on destination dir, test is passed.
+        assert os.path.exists(destination_path)
