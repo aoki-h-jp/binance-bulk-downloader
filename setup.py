@@ -8,5 +8,7 @@ setup(
     author="aoki-h-jp",
     author_email="aoki.hirotaka.biz@gmail.com",
     license="MIT",
-    packages=find_packages(include=["binance_bulk_downloader"], exclude=["tests", "example"]),
+    packages=find_packages(
+        include=["binance_bulk_downloader"], exclude=["tests", "example"]
+    ),
 )
