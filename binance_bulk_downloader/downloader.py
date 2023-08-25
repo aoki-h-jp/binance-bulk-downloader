@@ -14,8 +14,8 @@ from rich import print
 from rich.progress import track
 
 # import my libraries
-from .exceptions import (BinanceBulkDownloaderDownloadError,
-                         BinanceBulkDownloaderParamsError)
+from binance_bulk_downloader.exceptions import (
+    BinanceBulkDownloaderDownloadError, BinanceBulkDownloaderParamsError)
 
 
 class BinanceBulkDownloader:

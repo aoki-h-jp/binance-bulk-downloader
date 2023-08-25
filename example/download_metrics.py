@@ -1,5 +1,5 @@
-# import downloader
-from downloader import BinanceBulkDownloader
+# import binance_bulk_downloader
+from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 # generate instance
 downloader = BinanceBulkDownloader(data_type="metrics")
