@@ -37,6 +37,13 @@ downloader = BinanceBulkDownloader(data_type='aggTrades')
 downloader.run_download()
 ```
 
+### Other examples
+Please see /example directory.
+
+```bash
+python -m example.download_klines
+```
+
 ## pytest
 
 ```bash
