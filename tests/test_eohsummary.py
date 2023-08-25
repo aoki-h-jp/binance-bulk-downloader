@@ -5,7 +5,7 @@ import os
 import pytest
 
 # import my libraries
-from binance_bulk_downloader import BinanceBulkDownloader
+from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 
 def dynamic_eohsummary_test_params():
