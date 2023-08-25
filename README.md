@@ -16,7 +16,7 @@ pip install git+https://github.com/aoki-h-jp/binance-bulk-downloader
 ### Download all klines 1m data (USDT-M futures)
 
 ```python
-from binance_bulk_downloader import BinanceBulkDownloader
+from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 downloader = BinanceBulkDownloader()
 downloader.run_download()
@@ -25,7 +25,7 @@ downloader.run_download()
 ### Download all klines 1h data (Spot)
 
 ```python
-from binance_bulk_downloader import BinanceBulkDownloader
+from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 downloader = BinanceBulkDownloader(data_frequency='1h', asset='spot')
 downloader.run_download()
@@ -34,7 +34,7 @@ downloader.run_download()
 ### Download all aggTrades data (USDT-M futures)
 
 ```python
-from binance_bulk_downloader import BinanceBulkDownloader
+from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 downloader = BinanceBulkDownloader(data_type='aggTrades')
 downloader.run_download()
@@ -54,7 +54,7 @@ python -m pytest
 ```
 
 ## Available data types
-✅: Implemented and tested. ❌:Not available on Binance.
+✅: Implemented and tested. ❌: Not available on Binance.
 
 ### by data_type
 
