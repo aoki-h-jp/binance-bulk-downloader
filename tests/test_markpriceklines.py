@@ -5,7 +5,7 @@ import os
 import pytest
 
 # import my libraries
-from downloader.downloader import *
+from downloader import BinanceBulkDownloader
 
 
 def dynamic_markpriceklines_test_params():
