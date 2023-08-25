@@ -5,7 +5,7 @@ import os
 import pytest
 
 # import my libraries
-from downloader import BinanceBulkDownloader
+from binance_bulk_downloader import BinanceBulkDownloader
 
 
 def dynamic_bookdepth_test_params():
