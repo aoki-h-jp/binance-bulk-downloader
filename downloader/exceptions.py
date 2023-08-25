@@ -12,7 +12,7 @@ class BinanceBulkDownloaderParamsError(Exception):
     pass
 
 
-class BinacneBulkDownloaderDownloadError(Exception):
+class BinanceBulkDownloaderDownloadError(Exception):
     """
     BinanceBulkDownloader download error
     This exception is raised when BinanceBulkDownloader download is failed.
