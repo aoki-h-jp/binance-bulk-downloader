@@ -1,0 +1,13 @@
+import test_aggtrades
+import test_bookdepth
+import test_bookticker
+import test_bvolindex
+import test_eohsummary
+import test_fundingrate
+import test_indexpriceklines
+import test_klines
+import test_liquidationsnapshot
+import test_markpriceklines
+import test_metrics
+import test_premiumindexklines
+import test_trades
