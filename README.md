@@ -3,11 +3,7 @@
 [![Format code](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml/badge.svg?branch=main)](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml)
 
 ## Python library for bulk downloading Binance historical data
-A Python library to efficiently and concurrently download historical data files from Binance.
-
-Supports all asset types (spot, USDT-M, COIN-M, options) and all data frequencies.
-
-Status on available data types is shown below.
+A Python library to efficiently and concurrently download historical data files from Binance. Supports all asset types (spot, USDT-M, COIN-M, options) and all data frequencies.
 
 ## Installation
 
@@ -50,9 +46,7 @@ python -m example.download_klines
 python -m pytest
 ```
 
-## Status
-This library is under development. Not all unit tests have been completed yet and the behaviour is unstable.
-
+## Available data types
 ✅: Implemented and tested. ❌:Not available on Binance.
 
 ### by data_type
