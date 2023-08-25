@@ -1,0 +1,27 @@
+name: Run pytest on all branches
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9  # 使用するPythonのバージョンを指定してください
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+        pip install git+https://github.com/aoki-h-jp/binance-bulk-downloader
+        pipenv install --dev  # Pipenvを使用して依存関係をインストール
+
+    - name: Run pytest
+      run: |
+        pipenv run pytest -v -s  # pytestを実行するコマンドを指定
