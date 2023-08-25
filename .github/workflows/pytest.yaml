@@ -1,9 +1,6 @@
 name: Run pytest on all branches
 
-on:
-  push:
-    branches:
-      - '*'  # 全てのブランチに対して実行する
+on: push
 
 jobs:
   test:
