@@ -14,7 +14,7 @@ from rich import print
 from rich.progress import track
 
 # import my libraries
-from .exceptions import (BinacneBulkDownloaderDownloadError,
+from .exceptions import (BinanceBulkDownloaderDownloadError,
                          BinanceBulkDownloaderParamsError)
 
 
@@ -291,7 +291,7 @@ class BinanceBulkDownloader:
             print(f"[red]Bad Zip File: {zip_destination_path}[/red]")
             os.remove(zip_destination_path)
             print(f"[green]Removed: {zip_destination_path}[/green]")
-            raise BinacneBulkDownloaderDownloadError
+            raise BinanceBulkDownloaderDownloadError
 
         # Delete zip file
         os.remove(zip_destination_path)
