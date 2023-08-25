@@ -1,5 +1,5 @@
 """
 BinanceBulkDownloader: A library to efficiently and concurrently download historical data from Binance.
 """
-from downloader import *
-from exceptions import *
+import binance_bulk_downloader.downloader
+import binance_bulk_downloader.exceptions
