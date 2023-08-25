@@ -10,12 +10,11 @@ from zipfile import BadZipfile
 
 # import third-party libraries
 import requests
-from rich import print
-from rich.progress import track
-
 # import my libraries
 from exceptions import (BinacneBulkDownloaderDownloadError,
-                         BinanceBulkDownloaderParamsError)
+                        BinanceBulkDownloaderParamsError)
+from rich import print
+from rich.progress import track
 
 
 class BinanceBulkDownloader:
@@ -190,13 +189,17 @@ class BinanceBulkDownloader:
         tree = ElementTree.fromstring(response.content)
 
         files = []
-        for content in tree.findall("{http://s3.amazonaws.com/doc/2006-03-01/}Contents"):
+        for content in tree.findall(
+            "{http://s3.amazonaws.com/doc/2006-03-01/}Contents"
+        ):
             key = content.find("{http://s3.amazonaws.com/doc/2006-03-01/}Key").text
             if key.endswith(".zip"):
                 files.append(key)
                 self.marker = key
 
-        is_truncated_element = tree.find("{http://s3.amazonaws.com/doc/2006-03-01/}IsTruncated")
+        is_truncated_element = tree.find(
+            "{http://s3.amazonaws.com/doc/2006-03-01/}IsTruncated"
+        )
         self.is_truncated = is_truncated_element.text == "true"
 
         return files
@@ -311,12 +314,18 @@ class BinanceBulkDownloader:
         print(f"[bold blue]Downloading {self._data_type}[/bold blue]")
 
         while self.is_truncated:
-            file_list_generator = self._get_file_list_from_s3_bucket(self._build_prefix(), self.marker, self.is_truncated)
+            file_list_generator = self._get_file_list_from_s3_bucket(
+                self._build_prefix(), self.marker, self.is_truncated
+            )
             if self._data_type in self._DATA_FREQUENCY_REQUIRED_BY_DATA_TYPE:
-                file_list_generator = [prefix for prefix in file_list_generator if prefix.count(self._data_frequency) == 2]
+                file_list_generator = [
+                    prefix
+                    for prefix in file_list_generator
+                    if prefix.count(self._data_frequency) == 2
+                ]
             for prefix_chunk in track(
-                    self.make_chunks(file_list_generator, self._CHUNK_SIZE),
-                    description="Downloading",
+                self.make_chunks(file_list_generator, self._CHUNK_SIZE),
+                description="Downloading",
             ):
                 with ThreadPoolExecutor() as executor:
                     executor.map(self._download, prefix_chunk)
