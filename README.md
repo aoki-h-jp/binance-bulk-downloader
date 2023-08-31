@@ -2,6 +2,7 @@
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110//)
 [![Format code](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml/badge.svg?branch=main)](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml)
 [![pytest](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/pytest.yaml/badge.svg)](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/pytest.yaml)
+[![Github All Releases](https://img.shields.io/github/downloads/aoki-h-jp/binance-liquidation-feeder/total.svg)]()
 
 ## Python library for bulk downloading Binance historical data
 A Python library to efficiently and concurrently download historical data files from Binance. Supports all asset types (spot, USDT-M, COIN-M, options) and all data frequencies.
