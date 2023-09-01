@@ -129,6 +129,7 @@ class BinanceBulkDownloader:
         self._timeperiod_per_file = timeperiod_per_file
         self.marker = None
         self.is_truncated = True
+        self.downloaded_list = []
 
     def _check_params(self) -> None:
         """
@@ -330,3 +331,4 @@ class BinanceBulkDownloader:
             ):
                 with ThreadPoolExecutor() as executor:
                     executor.map(self._download, prefix_chunk)
+                self.downloaded_list.extend(prefix_chunk)
