@@ -3,14 +3,14 @@ Test spot market symbols filtering
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 
 @pytest.fixture
 def mock_s3_response():
-    """モックのS3レスポンスを生成するフィクスチャ"""
+    """Mock S3 response"""
     return {
         "BTCUSDT": [
             "data/spot/daily/klines/BTCUSDT/1h/BTCUSDT-1h-2024-01-01.zip",
@@ -75,7 +75,7 @@ def test_spot_symbols(
 ):
     """
     Test spot market symbols filtering
-    :param mock_s3_response: モックのS3レスポンス
+    :param mock_s3_response: mock S3 response
     :param tmpdir: temporary directory
     :param data_type: type of data to download
     :param data_frequency: frequency of data
