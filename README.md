@@ -10,7 +10,7 @@ A Python library to efficiently and concurrently download historical data files 
 ## Installation
 
 ```bash
-pip install git+https://github.com/aoki-h-jp/binance-bulk-downloader
+pip install binance-bulk-downloader
 ```
 
 ## Usage

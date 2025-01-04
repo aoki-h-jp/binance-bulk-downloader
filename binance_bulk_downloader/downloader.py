@@ -11,12 +11,15 @@ from zipfile import BadZipfile
 
 # import third-party libraries
 import requests
-from rich import print
+from rich.console import Console
 from rich.progress import track
+from rich.panel import Panel
 
 # import my libraries
 from binance_bulk_downloader.exceptions import (
-    BinanceBulkDownloaderDownloadError, BinanceBulkDownloaderParamsError)
+    BinanceBulkDownloaderDownloadError,
+    BinanceBulkDownloaderParamsError,
+)
 
 
 class BinanceBulkDownloader:
@@ -130,47 +133,55 @@ class BinanceBulkDownloader:
         self._timeperiod_per_file = timeperiod_per_file
         self.marker = None
         self.is_truncated = True
-        self.downloaded_list = []
+        self.downloaded_list: list[str] = []
+        self.console = Console()
 
     def _check_params(self) -> None:
         """
         Check params
         :return: None
         """
-        if (
-            self._data_type
-            not in self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]
-        ):
-            raise BinanceBulkDownloaderParamsError(
-                f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
-            )
-
-        if self._data_frequency not in self._DATA_FREQUENCY:
-            raise BinanceBulkDownloaderParamsError(
-                f"data_frequency must be {self._DATA_FREQUENCY}."
-            )
-
+        # Check asset type first
         if self._asset not in self._ASSET + self._FUTURES_ASSET + self._OPTIONS_ASSET:
             raise BinanceBulkDownloaderParamsError(
                 f"asset must be {self._ASSET + self._FUTURES_ASSET + self._OPTIONS_ASSET}."
             )
 
+        # Check time period
         if self._timeperiod_per_file not in ["daily", "monthly"]:
             raise BinanceBulkDownloaderParamsError(
-                f"timeperiod_per_file must be daily or monthly."
+                "timeperiod_per_file must be daily or monthly."
             )
 
-        if not self._data_type in self._DATA_TYPE_BY_ASSET.get(self._asset, None).get(
-            self._timeperiod_per_file, None
-        ):
+        # Check data frequency
+        if self._data_frequency not in self._DATA_FREQUENCY:
             raise BinanceBulkDownloaderParamsError(
-                f"data_type must be {self._DATA_TYPE_BY_ASSET[self._asset][self._timeperiod_per_file]}."
+                f"data_frequency must be {self._DATA_FREQUENCY}."
             )
 
+        # Check if asset exists in DATA_TYPE_BY_ASSET
+        if self._asset not in self._DATA_TYPE_BY_ASSET:
+            raise BinanceBulkDownloaderParamsError(
+                f"asset {self._asset} is not supported."
+            )
+
+        # Check if timeperiod exists for the asset
+        asset_data = self._DATA_TYPE_BY_ASSET.get(self._asset, {})
+        if self._timeperiod_per_file not in asset_data:
+            raise BinanceBulkDownloaderParamsError(
+                f"timeperiod {self._timeperiod_per_file} is not supported for {self._asset}."
+            )
+
+        # Check data type
+        valid_data_types = asset_data.get(self._timeperiod_per_file, [])
+        if self._data_type not in valid_data_types:
+            raise BinanceBulkDownloaderParamsError(
+                f"data_type must be one of {valid_data_types}."
+            )
+
+        # Check 1s frequency restriction
         if self._data_frequency == "1s":
-            if self._asset == "spot":
-                pass
-            else:
+            if self._asset != "spot":
                 raise BinanceBulkDownloaderParamsError(
                     f"data_frequency 1s is not supported for {self._asset}."
                 )
@@ -183,7 +194,7 @@ class BinanceBulkDownloader:
         :param is_truncated: is truncated
         :return: list of files
         """
-        print(f"[bold blue]Get file list[/bold blue]: " + prefix)
+        self.console.print(Panel(f"Getting file list: {prefix}", style="blue"))
         params = {"prefix": prefix, "max-keys": 1000}
         if marker:
             params["marker"] = marker
@@ -254,50 +265,95 @@ class BinanceBulkDownloader:
         :param prefix: s3 bucket prefix
         :return: None
         """
-        self._check_params()
-        zip_destination_path = os.path.join(self._destination_dir, prefix)
-        csv_destination_path = os.path.join(
-            self._destination_dir, prefix.replace(".zip", ".csv")
-        )
-
-        # Make directory if not exists
-        if not os.path.exists(os.path.dirname(zip_destination_path)):
-            os.makedirs(os.path.dirname(zip_destination_path))
-
-        # Don't download if already exists
-        if os.path.exists(csv_destination_path):
-            print(f"[yellow]Already exists: {csv_destination_path}[/yellow]")
-            return
-
-        url = f"{self._BINANCE_DATA_DOWNLOAD_BASE_URL}/{prefix}"
-        print(f"[bold blue]Downloading {url}[/bold blue]")
         try:
-            response = requests.get(url, zip_destination_path)
-            print(f"[green]Downloaded: {url}[/green]")
-        except requests.exceptions.HTTPError:
-            print(f"[red]HTTP Error: {url}[/red]")
-            return None
+            self._check_params()
+            zip_destination_path = os.path.join(self._destination_dir, prefix)
+            csv_destination_path = os.path.join(
+                self._destination_dir, prefix.replace(".zip", ".csv")
+            )
 
-        with open(zip_destination_path, "wb") as file:
-            for chunk in response.iter_content(chunk_size=8192):
-                file.write(chunk)
+            # Make directory if not exists
+            if not os.path.exists(os.path.dirname(zip_destination_path)):
+                try:
+                    os.makedirs(os.path.dirname(zip_destination_path))
+                except (PermissionError, OSError) as e:
+                    self.console.print(
+                        f"Directory creation error: {str(e)}", style="red"
+                    )
+                    raise BinanceBulkDownloaderDownloadError from e
 
-        try:
-            unzipped_path = "/".join(zip_destination_path.split("/")[:-1])
-            with zipfile.ZipFile(zip_destination_path) as existing_zip:
-                existing_zip.extractall(
-                    csv_destination_path.replace(csv_destination_path, unzipped_path)
+            # Don't download if already exists
+            if os.path.exists(csv_destination_path):
+                self.console.print(
+                    f"Already exists: {csv_destination_path}", style="yellow"
                 )
-                print(f"[green]Unzipped: {zip_destination_path}[/green]")
-        except BadZipfile:
-            print(f"[red]Bad Zip File: {zip_destination_path}[/red]")
-            os.remove(zip_destination_path)
-            print(f"[green]Removed: {zip_destination_path}[/green]")
-            raise BinanceBulkDownloaderDownloadError
+                return
 
-        # Delete zip file
-        os.remove(zip_destination_path)
-        print(f"[green]Removed: {zip_destination_path}[/green]")
+            url = f"{self._BINANCE_DATA_DOWNLOAD_BASE_URL}/{prefix}"
+            self.console.print(Panel(f"Downloading: {url}", style="blue"))
+
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+                self.console.print(f"Downloaded: {url}", style="green")
+            except (
+                requests.exceptions.RequestException,
+                requests.exceptions.HTTPError,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+            ) as e:
+                self.console.print(f"Download error: {str(e)}", style="red")
+                raise BinanceBulkDownloaderDownloadError from e
+
+            try:
+                with open(zip_destination_path, "wb") as file:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        file.write(chunk)
+            except OSError as e:
+                self.console.print(f"File write error: {str(e)}", style="red")
+                raise BinanceBulkDownloaderDownloadError from e
+
+            try:
+                unzipped_path = "/".join(zip_destination_path.split("/")[:-1])
+                with zipfile.ZipFile(zip_destination_path) as existing_zip:
+                    existing_zip.extractall(
+                        csv_destination_path.replace(
+                            csv_destination_path, unzipped_path
+                        )
+                    )
+                    self.console.print(
+                        f"Unzipped: {zip_destination_path}", style="green"
+                    )
+            except BadZipfile as e:
+                self.console.print(f"Bad Zip File: {zip_destination_path}", style="red")
+                if os.path.exists(zip_destination_path):
+                    os.remove(zip_destination_path)
+                    self.console.print(
+                        f"Removed: {zip_destination_path}", style="green"
+                    )
+                raise BinanceBulkDownloaderDownloadError from e
+            except OSError as e:
+                self.console.print(f"Unzip error: {str(e)}", style="red")
+                if os.path.exists(zip_destination_path):
+                    os.remove(zip_destination_path)
+                    self.console.print(
+                        f"Removed: {zip_destination_path}", style="green"
+                    )
+                raise BinanceBulkDownloaderDownloadError from e
+
+            # Delete zip file
+            try:
+                os.remove(zip_destination_path)
+                self.console.print(f"Removed: {zip_destination_path}", style="green")
+            except OSError as e:
+                self.console.print(f"File removal error: {str(e)}", style="red")
+                raise BinanceBulkDownloaderDownloadError from e
+
+        except Exception as e:
+            if not isinstance(e, BinanceBulkDownloaderDownloadError):
+                self.console.print(f"Unexpected error: {str(e)}", style="red")
+                raise BinanceBulkDownloaderDownloadError from e
+            raise
 
     @staticmethod
     def make_chunks(lst, n) -> list:
@@ -314,7 +370,9 @@ class BinanceBulkDownloader:
         Download concurrently
         :return: None
         """
-        print(f"[bold blue]Downloading {self._data_type}[/bold blue]")
+        self.console.print(
+            Panel(f"Starting download for {self._data_type}", style="blue bold")
+        )
 
         while self.is_truncated:
             file_list_generator = self._get_file_list_from_s3_bucket(
