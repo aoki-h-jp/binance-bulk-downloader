@@ -39,11 +39,22 @@ downloader.run_download()
 from binance_bulk_downloader.downloader import BinanceBulkDownloader
 
 # Download single symbol
-downloader = BinanceBulkDownloader(symbols='BTCUSDT')
+downloader = BinanceBulkDownloader(
+    data_type="klines",
+    data_frequency="1h",
+    asset="spot",
+    timeperiod_per_file="daily",
+    symbols="BTCUSDT",
+)
 downloader.run_download()
 
 # Download multiple symbols
-downloader = BinanceBulkDownloader(symbols=['BTCUSDT', 'ETHUSDT'])
+downloader = BinanceBulkDownloader(
+    data_type="trades",
+    asset="spot",
+    timeperiod_per_file="daily",
+    symbols=["BTCUSDT", "ETHUSDT"],
+)
 downloader.run_download()
 ```
 
