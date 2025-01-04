@@ -8,6 +8,7 @@ import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from xml.etree import ElementTree
 from zipfile import BadZipfile
+from typing import Optional, List, Union
 
 # import third-party libraries
 import requests
@@ -118,6 +119,7 @@ class BinanceBulkDownloader:
         data_frequency="1m",
         asset="um",
         timeperiod_per_file="daily",
+        symbols: Optional[Union[str, List[str]]] = None,
     ) -> None:
         """
         :param destination_dir: Destination directory for downloaded files
@@ -125,12 +127,14 @@ class BinanceBulkDownloader:
         :param data_frequency: Frequency of data to download (1m, 1h, 1d, etc.)
         :param asset: Type of asset to download (um, cm, spot, option)
         :param timeperiod_per_file: Time period per file (daily, monthly)
+        :param symbols: Optional. Symbol or list of symbols to download (e.g., "BTCUSDT" or ["BTCUSDT", "ETHUSDT"])
         """
         self._destination_dir = destination_dir
         self._data_type = data_type
         self._data_frequency = data_frequency
         self._asset = asset
         self._timeperiod_per_file = timeperiod_per_file
+        self._symbols = [symbols] if isinstance(symbols, str) else symbols
         self.marker = None
         self.is_truncated = True
         self.downloaded_list: list[str] = []
@@ -208,8 +212,14 @@ class BinanceBulkDownloader:
         ):
             key = content.find("{http://s3.amazonaws.com/doc/2006-03-01/}Key").text
             if key.endswith(".zip"):
-                files.append(key)
-                self.marker = key
+                # Filter by symbols if specified
+                if self._symbols:
+                    if any(symbol.upper() in key for symbol in self._symbols):
+                        files.append(key)
+                        self.marker = key
+                else:
+                    files.append(key)
+                    self.marker = key
 
         is_truncated_element = tree.find(
             "{http://s3.amazonaws.com/doc/2006-03-01/}IsTruncated"
