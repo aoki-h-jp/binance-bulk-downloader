@@ -1,6 +1,7 @@
 """
 Binance Bulk Downloader
 """
+
 # import standard libraries
 import os
 import zipfile
