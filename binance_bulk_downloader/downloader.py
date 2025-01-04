@@ -323,7 +323,7 @@ class BinanceBulkDownloader:
             and self._data_frequency
         ):
             if isinstance(self._symbols, (str, list)):
-                url_parts.append(self._data_frequency)
+                url_parts.append(f"{self._data_frequency}/")
 
         return "/".join(url_parts)
 
