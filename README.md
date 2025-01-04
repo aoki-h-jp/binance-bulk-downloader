@@ -1,18 +1,20 @@
 # binance-bulk-downloader
+
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110//)
-[![Format code](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml/badge.svg?branch=main)](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/Formatter.yml)
 [![pytest](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/pytest.yaml/badge.svg)](https://github.com/aoki-h-jp/binance-bulk-downloader/actions/workflows/pytest.yaml)
 
 ## Python library for bulk downloading Binance historical data
+
 A Python library to efficiently and concurrently download historical data files from Binance. Supports all asset types (spot, USDT-M, COIN-M, options) and all data frequencies.
 
 ## Installation
 
 ```bash
-pip install git+https://github.com/aoki-h-jp/binance-bulk-downloader
+pip install binance-bulk-downloader
 ```
 
 ## Usage
+
 ### Download all klines 1m data (USDT-M futures)
 
 ```python
@@ -41,6 +43,7 @@ downloader.run_download()
 ```
 
 ### Other examples
+
 Please see /example directory.
 
 ```bash
@@ -54,25 +57,26 @@ python -m pytest
 ```
 
 ## Available data types
+
 ✅: Implemented and tested. ❌: Not available on Binance.
 
 ### by data_type
 
-| data_type           | spot | um   | cm   | options | 
-| :------------------ | :--: | :--: | :--: | :-----: | 
-| aggTrades           | ✅   | ✅   | ✅ | ❌      | 
-| bookDepth           | ❌   | ✅   | ✅ | ❌      | 
-| bookTicker          | ❌   | ✅   | ✅ | ❌      | 
-| fundingRate         | ❌   | ✅   | ✅ | ❌      | 
-| indexPriceKlines    | ❌   | ✅   | ✅ | ❌      | 
-| klines              | ✅   | ✅   | ✅ | ❌      | 
-| liquidationSnapshot | ❌   | ✅   | ✅ | ❌      | 
-| markPriceKlines     | ❌   | ✅   | ✅ | ❌      | 
-| metrics             | ❌   | ✅   | ✅ | ❌      | 
-| premiumIndexKlines  | ❌   | ✅   | ✅ | ❌      | 
-| trades              | ✅   | ✅   | ✅ | ❌      | 
-| BVOLIndex           | ❌   | ❌   | ❌ | ✅      | 
-| EOHSummary          | ❌   | ❌   | ❌ | ✅      | 
+| data_type           | spot | um   | cm   | options |
+| :------------------ | :--: | :--: | :--: | :-----: |
+| aggTrades           | ✅   | ✅   | ✅ | ❌      |
+| bookDepth           | ❌   | ✅   | ✅ | ❌      |
+| bookTicker          | ❌   | ✅   | ✅ | ❌      |
+| fundingRate         | ❌   | ✅   | ✅ | ❌      |
+| indexPriceKlines    | ❌   | ✅   | ✅ | ❌      |
+| klines              | ✅   | ✅   | ✅ | ❌      |
+| liquidationSnapshot | ❌   | ✅   | ✅ | ❌      |
+| markPriceKlines     | ❌   | ✅   | ✅ | ❌      |
+| metrics             | ❌   | ✅   | ✅ | ❌      |
+| premiumIndexKlines  | ❌   | ✅   | ✅ | ❌      |
+| trades              | ✅   | ✅   | ✅ | ❌      |
+| BVOLIndex           | ❌   | ❌   | ❌ | ✅      |
+| EOHSummary          | ❌   | ❌   | ❌ | ✅      |
 
 ### by data_frequency (klines, indexPriceKlines, markPriceKlines, premiumIndexKlines)
 
@@ -96,9 +100,11 @@ python -m pytest
 | 1mo            | ✅   | ✅   | ✅ | ❌      |
 
 ## If you want to report a bug or request a feature
+
 Please create an issue on this repository!
 
 ## Disclaimer
+
 This project is for educational purposes only. You should not construe any such information or other material as legal,
 tax, investment, financial, or other advice. Nothing contained here constitutes a solicitation, recommendation,
 endorsement, or offer by me or any third party service provider to buy or sell any securities or other financial
