@@ -22,6 +22,7 @@ from binance_bulk_downloader.exceptions import (
     BinanceBulkDownloaderDownloadError,
     BinanceBulkDownloaderParamsError,
 )
+from binance_bulk_downloader.data_processor import BinanceDataProcessor
 
 
 class BinanceBulkDownloader:
@@ -415,10 +416,12 @@ class BinanceBulkDownloader:
         """
         return [lst[i : i + n] for i in range(0, len(lst), n)]
 
-    def run_download(self):
+    def run_download(self, merge_files: bool = True) -> None:
         """
-        Download concurrently
-        :return: None
+        Run the download process for the specified data
+
+        Args:
+            merge_files (bool, optional): Whether to merge files after download. Defaults to True.
         """
         self.console.print(
             Panel(f"Starting download for {self._data_type}", style="blue bold")
@@ -429,7 +432,7 @@ class BinanceBulkDownloader:
         if isinstance(self._symbols, list) and len(self._symbols) > 1:
             original_symbols = self._symbols
             for symbol in original_symbols:
-                self._symbols = symbol  # Temporarily set to single symbol
+                self._symbols = [symbol]  # Temporarily set to single symbol
                 symbol_files = self._get_file_list_from_s3_bucket(self._build_prefix())
                 file_list.extend(symbol_files)
             self._symbols = original_symbols  # Restore original symbols
@@ -475,3 +478,21 @@ class BinanceBulkDownloader:
                             live.update(status)
 
                 self.downloaded_list.extend(prefix_chunk)
+
+            # Merge files
+            if merge_files and self.downloaded_list:
+                try:
+                    self.console.print("\n[cyan]Consolidating files...[/cyan]")
+                    first_file = self.downloaded_list[
+                        0
+                    ]  # example: ./data/futures/um/monthly/klines/BTCUSDT/1d/BTCUSDT-1d-2024-01.zip
+                    base_path = os.path.dirname(
+                        os.path.dirname(os.path.dirname(first_file))
+                    )
+
+                    BinanceDataProcessor.consolidate_csv_files(
+                        base_path=base_path,
+                        data_frequency=self._data_frequency,
+                    )
+                except Exception as e:
+                    self.console.print(f"[red]Error merging files:[/red] {str(e)}")
